@@ -1,0 +1,4 @@
+# Packages over 90 MB are not committed (a Git host refuses 100 MB): they are listed in
+# the index by URL and uploaded as release assets. publish.sh puts them here.
+/dist/
+__pycache__/

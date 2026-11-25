@@ -1,0 +1,130 @@
+{
+  "generated": "2026-11-25T21:03:35Z",
+  "name": "official",
+  "packages": [
+    {
+      "capabilities": [
+        "log",
+        "config",
+        "stats",
+        "storage",
+        "interfaces.register",
+        "interfaces.inbound",
+        "avatar",
+        "calls",
+        "ui.panel"
+      ],
+      "core_api": ">=0.1,<1",
+      "default_install": false,
+      "description": "Chat and take voice calls through a Telegram user account (Telethon).",
+      "experimental": true,
+      "file": "dist/telegram-0.1.0.synthx",
+      "id": "official/telegram",
+      "name": "Telegram (user account)",
+      "platform": "linux-x86_64-py312",
+      "sha256": "3eb8b2b1cb709088ea7aa830c825df1bc4bdcfab52e7917fc8045e89421fd405",
+      "size": 162086572,
+      "url": "https://github.com/XargonWan/synthetic-heart-official-plugins/releases/download/v0.1.0/telegram-0.1.0.synthx",
+      "version": "0.1.0"
+    },
+    {
+      "capabilities": [
+        "log",
+        "config",
+        "stats",
+        "interfaces.register",
+        "interfaces.inbound",
+        "avatar"
+      ],
+      "core_api": ">=0.1,<1",
+      "default_install": true,
+      "description": "Chat with SyntH on a Fluxer instance (a Discord-compatible, self-hostable chat platform).",
+      "experimental": true,
+      "file": "packages/official/fluxer-0.1.0.synthx",
+      "id": "official/fluxer",
+      "name": "Fluxer Bot",
+      "platform": "linux-x86_64-py312",
+      "sha256": "67627ddbb17e0608c655dcac94f7a6470c2423c0dc48e4d99809fe8168024846",
+      "size": 11831723,
+      "version": "0.1.0"
+    },
+    {
+      "capabilities": [
+        "log",
+        "config",
+        "stats",
+        "core.info",
+        "interfaces.register",
+        "interfaces.inbound"
+      ],
+      "core_api": ">=0.1,<1",
+      "default_install": true,
+      "description": "Talk to SyntH from any OpenAI-compatible client: models, chat completions and completions, with standard SSE streaming.",
+      "experimental": false,
+      "file": "packages/official/openai_api-0.1.0.synthx",
+      "id": "official/openai_api",
+      "name": "OpenAI API",
+      "platform": "linux-x86_64-py312",
+      "sha256": "9d8ddf7244f0a74434c424b7c4774be6c7a993fae416b716a2fc01385e862285",
+      "size": 11835794,
+      "version": "0.1.0"
+    },
+    {
+      "capabilities": [
+        "log",
+        "web.static",
+        "web.origin"
+      ],
+      "core_api": ">=0.1,<1",
+      "default_install": true,
+      "description": "A standalone browser client for the SyntH avatar: the 3D stage, chat and voice, served at /stage/.",
+      "experimental": false,
+      "file": "packages/official/synth_stage-0.1.0.synthx",
+      "id": "official/synth_stage",
+      "name": "SyntH Stage",
+      "platform": "any",
+      "sha256": "cd7041f1188890a08efb39b6ed77518836273642e01c9aad887c4b4a0b811312",
+      "size": 999418,
+      "version": "0.1.0"
+    },
+    {
+      "capabilities": [
+        "log",
+        "config",
+        "stats",
+        "interfaces.register",
+        "interfaces.inbound"
+      ],
+      "core_api": ">=0.1,<1",
+      "default_install": true,
+      "description": "Chat with SyntH through a Telegram bot (BotFather token).",
+      "experimental": true,
+      "file": "packages/official/telegram_bot-0.1.0.synthx",
+      "id": "official/telegram_bot",
+      "name": "Telegram Bot",
+      "platform": "any",
+      "sha256": "a9c99f486b8ba913c7905cb7ba88e04fe1b0426360a88f2ea9e26776152cb847",
+      "size": 5601725,
+      "version": "0.1.0"
+    },
+    {
+      "capabilities": [
+        "log",
+        "config",
+        "endpoints.manage"
+      ],
+      "core_api": ">=0.1,<1",
+      "default_install": true,
+      "description": "Connect SyntH to the Zen LLM Engine, a free browser-driven engine that talks to AI chat sites, so you can use SyntH without any API key.",
+      "experimental": false,
+      "file": "packages/official/zen-0.1.0.synthx",
+      "id": "official/zen",
+      "name": "Zen LLM Engine",
+      "platform": "any",
+      "sha256": "4648a48fe13f765bfe3881d0a8de00b76d48f03facd58a89d7b5369b1a42ceda",
+      "size": 5286,
+      "version": "0.1.0"
+    }
+  ],
+  "schema": 1
+}
