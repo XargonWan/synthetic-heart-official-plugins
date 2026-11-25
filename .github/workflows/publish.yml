@@ -1,0 +1,136 @@
+name: publish
+
+# Builds every extension and publishes each one as its own .zip asset of a ROLLING
+# release, together with the signed catalog (synth-repo.json) a SyntH installation reads:
+#
+#   develop  ->  release tag  latest-develop   (marked as a pre-release)
+#   main     ->  release tag  latest
+#
+# The release is not versioned per update: its tag moves to the newest commit and its
+# assets are replaced. The version of each extension is in the manifest inside its zip
+# and in the catalog. A pull request only builds (unsigned) to prove the build works.
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+  # The extensions' sources are in the SyntH repository: a push there can ask for a rebuild
+  # with  POST /repos/<owner>/<repo>/dispatches  {"event_type": "core-updated",
+  # "client_payload": {"branch": "develop"}}.
+  repository_dispatch:
+    types: [core-updated]
+
+concurrency:
+  group: publish-${{ github.event.client_payload.branch || github.head_ref || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  CORE_REPOSITORY: XargonWan/synthetic_heart
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Channel
+        id: channel
+        env:
+          BRANCH: ${{ github.event.client_payload.branch || github.base_ref || github.ref_name }}
+        run: |
+          if [ "$BRANCH" = "main" ]; then
+            echo "branch=main" >> "$GITHUB_OUTPUT"
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+            echo "core_ref=main" >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=develop" >> "$GITHUB_OUTPUT"
+            echo "tag=latest-develop" >> "$GITHUB_OUTPUT"
+            echo "core_ref=develop" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out this repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'repository_dispatch' && steps.channel.outputs.branch || '' }}
+
+      # The sources, and the packer (core/extensions), live in the SyntH repository. The
+      # repository variable SYNTH_CORE_REF overrides which ref of it is built (for example
+      # the branch that still holds the extension platform before it is merged).
+      - name: Check out SyntH
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CORE_REPOSITORY }}
+          ref: ${{ vars.SYNTH_CORE_REF || steps.channel.outputs.core_ref }}
+          path: synth-core
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Publisher key
+        if: github.event_name != 'pull_request'
+        env:
+          KEY_B64: ${{ secrets.SYNTH_PUBLISHER_KEY }}
+        run: |
+          if [ -z "$KEY_B64" ]; then
+            echo "::error::the secret SYNTH_PUBLISHER_KEY is not set (base64 of the publisher key file)"
+            exit 1
+          fi
+          umask 077
+          printf '%s' "$KEY_B64" | base64 -d > "$RUNNER_TEMP/publisher.key"
+          echo "SYNTH_PUBLISHER_KEY_FILE=$RUNNER_TEMP/publisher.key" >> "$GITHUB_ENV"
+
+      - name: Build the packages and the catalog
+        env:
+          SYNTH_CORE: ${{ github.workspace }}/synth-core
+        run: scripts/build_release.sh "$GITHUB_WORKSPACE/dist"
+
+      - name: Publish the rolling release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.channel.outputs.tag }}
+          BRANCH: ${{ steps.channel.outputs.branch }}
+        run: |
+          set -euo pipefail
+          sha="$(git rev-parse HEAD)"
+          # Move the tag to this commit (a rolling release).
+          git tag -f "$TAG" "$sha"
+          git push -f origin "refs/tags/$TAG"
+
+          {
+            echo "Rolling release of the \`$BRANCH\` branch, built from commit \`${sha:0:12}\`"
+            echo "on $(date -u +'%Y-%m-%d %H:%M UTC'). It is replaced on every update: the version"
+            echo "of each extension is in its manifest and in the catalog."
+            echo
+            echo "Point SyntH at it: \`github:${GITHUB_REPOSITORY}\` with the release tag \`$TAG\`."
+            echo
+            echo "| Extension | Version | Platform | Size |"
+            echo "| --- | --- | --- | --- |"
+            python3 - <<'PY'
+          import json
+          for p in json.load(open("dist/synth-repo.json"))["packages"]:
+              print(f"| `{p['id']}` | {p['version']} | {p['platform']} | {p['size'] / 1e6:.1f} MB |")
+          PY
+          } > notes.md
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --notes-file notes.md
+          elif [ "$BRANCH" = "main" ]; then
+            gh release create "$TAG" --title "Latest" --notes-file notes.md --target "$sha" --latest
+          else
+            gh release create "$TAG" --title "Latest (develop)" --notes-file notes.md --target "$sha" --prerelease
+          fi
+
+          gh release upload "$TAG" dist/* --clobber
+
+          # An extension that is no longer built must not stay in the release.
+          gh release view "$TAG" --json assets --jq '.assets[].name' | while read -r name; do
+            [ -e "dist/$name" ] || gh release delete-asset "$TAG" "$name" --yes
+          done
