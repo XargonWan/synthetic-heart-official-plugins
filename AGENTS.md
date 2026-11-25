@@ -61,6 +61,8 @@ red.
 
 ## Publishing
 
-`publish.sh` packs every extension, signs the index and lists oversized packages by URL.
-Bump `version` in the manifest for any change that ships: an installed version is never
-replaced by the same number.
+The pipeline (`.github/workflows/publish.yml`) builds every extension and publishes each as
+`official-<name>.zip` in the rolling release of its branch (`latest-develop` for `develop`,
+`latest` for `main`), with the signed catalog. Bump `version` in the manifest for any change
+that ships: an installed version is never replaced by the same number. Do not commit built
+packages or catalogs here, and never the publisher key.
