@@ -14,6 +14,8 @@ and what a fresh installation installs its defaults from.
 | `official/fluxer` | Fluxer (Discord-compatible) interface | yes |
 | `official/zen` | Registers the Zen LLM Engine endpoint | yes |
 | `official/telegram` | Telegram **user account** (login from the WebUI, voice and video calls) | no (162 MB) |
+| `official/protocol_harmony` | Harmony AI Cloud protocol for external endpoints (model catalogue, TTS, STT) | yes |
+| `official/protocol_fish` | Fish Audio protocol for external endpoints (cloud TTS and voices) | yes |
 | `official/radio_host` | AzuraCast Radio DJ: the synth speaks between songs on your station (needs ffmpeg) | no |
 
 ## Releases
