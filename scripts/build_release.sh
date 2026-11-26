@@ -18,7 +18,7 @@ OUT="${1:-$ROOT/dist}"
 KEY="${SYNTH_PUBLISHER_KEY_FILE:-$HOME/.config/synth/publisher.key}"
 
 # What is published, and what a fresh SyntH installs on its own.
-EXTENSIONS=(synth_stage synth_dashboard openai_api fluxer telegram_bot zen telegram)
+EXTENSIONS=(synth_stage synth_dashboard openai_api fluxer telegram_bot zen telegram radio_host)
 DEFAULTS=(official/synth_stage official/synth_dashboard official/openai_api official/fluxer official/telegram_bot official/zen)
 
 if [ ! -f "$CORE/extensions_src/synth_stage/web/index.html" ]; then
