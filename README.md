@@ -8,6 +8,7 @@ and what a fresh installation installs its defaults from.
 | Extension | What it does | Installed by default |
 | --- | --- | --- |
 | `official/synth_stage` | The SyntH Stage client (3D avatar, chat, voice) at `/stage/` | yes |
+| `official/synth_dashboard` | The Control Deck (Dashboard): every setting as a knob, toggle or readout, in the More… menu | yes |
 | `official/openai_api` | An OpenAI-compatible API (`/v1/chat/completions`, SSE streaming) | yes |
 | `official/telegram_bot` | Telegram bot interface | yes |
 | `official/fluxer` | Fluxer (Discord-compatible) interface | yes |
