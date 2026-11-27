@@ -3,7 +3,7 @@ schema = 1
 [extension]
 id = "official/vox_kitten"
 name = "KittenTTS voice"
-version = "0.1.0"
+version = "0.1.1"
 description = "Local, offline text-to-speech with the KittenTTS models: multi-voice, runs on the CPU."
 author = "XargonWan"
 

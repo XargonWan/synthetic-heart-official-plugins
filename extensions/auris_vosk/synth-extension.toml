@@ -3,7 +3,7 @@ schema = 1
 [extension]
 id = "official/auris_vosk"
 name = "Vosk speech recognition"
-version = "0.1.0"
+version = "0.1.1"
 description = "Local, offline speech-to-text with Vosk: runs on the CPU, no account and no cloud."
 author = "XargonWan"
 

@@ -3,7 +3,7 @@ schema = 1
 [extension]
 id = "official/synth_dashboard"
 name = "Control Deck"
-version = "0.1.0"
+version = "0.1.1"
 description = "The Dashboard: a knob, toggle and readout for every adjustable setting, with plugin switches and an agent prompt runner."
 author = "Scarlet-Raine"
 

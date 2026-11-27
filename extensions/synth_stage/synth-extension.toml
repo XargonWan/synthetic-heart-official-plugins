@@ -3,7 +3,7 @@ schema = 1
 [extension]
 id = "official/synth_stage"
 name = "SyntH Stage"
-version = "0.1.0"
+version = "0.1.1"
 description = "A standalone browser client for the SyntH avatar: the 3D stage, chat and voice, served at /stage/."
 author = "Scarlet-Raine"
 

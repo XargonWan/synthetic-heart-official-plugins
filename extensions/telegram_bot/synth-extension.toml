@@ -3,7 +3,7 @@ schema = 1
 [extension]
 id = "official/telegram_bot"
 name = "Telegram Bot"
-version = "0.1.0"
+version = "0.1.1"
 description = "Chat with SyntH through a Telegram bot (BotFather token)."
 author = "XargonWan"
 experimental = true

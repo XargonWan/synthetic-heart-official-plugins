@@ -3,7 +3,7 @@ schema = 1
 [extension]
 id = "official/zen"
 name = "Zen LLM Engine"
-version = "0.1.0"
+version = "0.1.1"
 description = "Connect SyntH to the Zen LLM Engine, a free browser-driven engine that talks to AI chat sites, so you can use SyntH without any API key."
 author = "XargonWan"
 
