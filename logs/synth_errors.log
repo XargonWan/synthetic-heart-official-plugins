@@ -1,0 +1,4 @@
+[2026-11-27 14:55:53 +0000] [ERROR] [config_manager.py:890] [config] Error loading from DB for key 'LOGGING_LEVEL': [Errno 111] Connect call failed ('127.0.0.1', 1)
+[2026-11-27 14:55:53 +0000] [ERROR] [config_manager.py:1099] [config] Unexpected error while persisting 'LOGGING_LEVEL': [Errno 111] Connect call failed ('127.0.0.1', 1)
+[2026-11-27 14:55:53 +0000] [ERROR] [config_manager.py:890] [config] Error loading from DB for key 'LOGGING_LOGCHAT_LEVEL': [Errno 111] Connect call failed ('127.0.0.1', 1)
+[2026-11-27 14:55:53 +0000] [ERROR] [config_manager.py:1099] [config] Unexpected error while persisting 'LOGGING_LOGCHAT_LEVEL': [Errno 111] Connect call failed ('127.0.0.1', 1)

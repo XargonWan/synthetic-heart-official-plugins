@@ -109,9 +109,23 @@ async def test_the_engine_url_setting_is_used(rig: SimpleNamespace) -> None:
 async def test_it_is_not_added_behind_a_configured_operator(
     rig: SimpleNamespace,
 ) -> None:
-    rig.port.rows["openai"] = EndpointInfo(1, "openai", "https://api.openai.com", True)
+    rig.port.rows["openai"] = EndpointInfo(
+        1, "openai", "https://api.openai.com", True, {"_cortex": True}
+    )
     await run(rig)
     assert "zen-llm-engine" not in rig.port.rows and rig.port.calls == []
+
+
+@pytest.mark.asyncio
+async def test_the_local_voice_and_hearing_engines_do_not_stop_a_fresh_install_getting_it(
+    rig: SimpleNamespace,
+) -> None:
+    """KittenTTS and Vosk are installed by default and create their own endpoints first: that
+    must not count as an operator who already configured a model."""
+    rig.port.rows["kitten"] = EndpointInfo(1, "kitten", "", False)
+    rig.port.rows["vosk"] = EndpointInfo(2, "vosk", "", False)
+    await run(rig)
+    assert "zen-llm-engine" in rig.port.rows
 
 
 @pytest.mark.asyncio

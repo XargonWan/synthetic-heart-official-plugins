@@ -38,7 +38,7 @@ async def main(ctx: Context) -> None:
             display_label=convert.LABEL,
             extra_config=convert.EXTRA_CONFIG,
             subsystem_map=convert.SUBSYSTEMS,
-            only_if_registry_empty=True,
+            only_if_no_cortex=True,
             update_base_url=stale,
         )
     except PermissionDenied as exc:

@@ -1,0 +1,75 @@
+[2026-11-27 14:55:53 +0000] [INFO] [logging_utils.py:822] [logging_utils] Started synth logger with level=INFO, log_file=./logs/synth.log, error_log_file=./logs/synth_errors.log
+[2026-11-27 14:55:53 +0000] [INFO] [db.py:630] [db] Creating connection pool for loop id=140361682543792
+[2026-11-27 14:55:53 +0000] [INFO] [db.py:678] [db] Creating pool with minsize=1 maxsize=60
+[2026-11-27 14:55:53 +0000] [ERROR] [config_manager.py:890] [config] Error loading from DB for key 'LOGGING_LEVEL': [Errno 111] Connect call failed ('127.0.0.1', 1)
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_ALIASES_TRIGGER
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_INTERESTS_TRIGGER
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_LIKES_TRIGGER
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_DISLIKES_TRIGGER
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_PROFILE
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var AUTONOMY_ALLOWED_ACTIONS
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_ALIASES
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_LIKES
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_DISLIKES
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_FULL_ALIASES
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_CURRENT_ANIMATION
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var WEBUI_ACCENT_COLOR
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_AUTONOMY_MODE
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var TRAINER_IDS
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var FAILED_MESSAGE_TEXT
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var RESPONSE_TIMEOUT
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var ALLOW_SAFE_FLAG_OVERRIDE
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var OUTGOING_DEDUPE_WINDOW
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var RESTRICT_ACTIONS
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var TZ
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var PROMPT_LOCATION
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var DB_HOST
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var DB_PORT
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var DB_USER
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var DB_PASS
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var DB_NAME
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var EMOTION_DECAY_TAU
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var EMOTION_MAX_DISPLAY
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var GRILLO_BEAT_INTERVAL
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var GRILLO_DREAM_ENABLED
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var GRILLO_DREAM_SAMPLES
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var GRILLO_DREAM_TIME
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var GRILLO_OBSERVER_ENABLED
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var GRILLO_OBSERVER_INTERVAL
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var GRILLO_OBSERVER_SAMPLES
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var GRILLO_OBSERVER_PROPOSE_ONLY
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var HISTORY_EVALUATOR_DEFAULT_ENTRIES
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var LOG_LLM_TRAFFIC_ENABLED
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var LOG_LLM_TRAFFIC_PATH
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var LOG_LLM_TRAFFIC_REDACT_ACTIONS
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var DIARY_HISTORY_DAYS
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var REACT_WHEN_MENTIONED
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var CORRECTOR_RETRIES
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var CONTEXT_LINK_MAP
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var GRILLO_SUPPRESS_INACTIVE
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_PEERS
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_PEER_POLICY
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_PEER_TURN_FLOOR_SECONDS
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_PEER_RELAY_TIMEOUT_SECONDS
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_PEER_MENTION_COOLDOWN_SECONDS
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var SYNTH_PEER_ENABLED
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:1004] [variables_engine] Completed explicit exposed var registrations
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var LIVE_VOICE_NAME
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var LIVE_VOICE_STYLE
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var LIVE_THINKING_LEVEL
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var LOG_CHAT_ID
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var CALL_ACK_ENABLED
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var CALL_ENABLED
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var CALL_LIVE_ENGINE_ENABLED
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var CALL_SOUNDS_ENABLED
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var CALL_SCREEN_FRAME_MIN_INTERVAL_SEC
+[2026-11-27 14:55:53 +0000] [INFO] [variables_engine.py:209] [exposed_vars] Registered exposed var CALL_SCREEN_MAX_EDGE_PX
+[2026-11-27 14:55:53 +0000] [INFO] [db.py:630] [db] Creating connection pool for loop id=140361680331520
+[2026-11-27 14:55:53 +0000] [INFO] [db.py:678] [db] Creating pool with minsize=1 maxsize=60
+[2026-11-27 14:55:53 +0000] [ERROR] [config_manager.py:1099] [config] Unexpected error while persisting 'LOGGING_LEVEL': [Errno 111] Connect call failed ('127.0.0.1', 1)
+[2026-11-27 14:55:53 +0000] [INFO] [db.py:630] [db] Creating connection pool for loop id=140361680776096
+[2026-11-27 14:55:53 +0000] [INFO] [db.py:678] [db] Creating pool with minsize=1 maxsize=60
+[2026-11-27 14:55:53 +0000] [ERROR] [config_manager.py:890] [config] Error loading from DB for key 'LOGGING_LOGCHAT_LEVEL': [Errno 111] Connect call failed ('127.0.0.1', 1)
+[2026-11-27 14:55:53 +0000] [INFO] [db.py:630] [db] Creating connection pool for loop id=140361658501792
+[2026-11-27 14:55:53 +0000] [INFO] [db.py:678] [db] Creating pool with minsize=1 maxsize=60
+[2026-11-27 14:55:53 +0000] [ERROR] [config_manager.py:1099] [config] Unexpected error while persisting 'LOGGING_LOGCHAT_LEVEL': [Errno 111] Connect call failed ('127.0.0.1', 1)
