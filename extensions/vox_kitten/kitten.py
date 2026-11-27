@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import io
 import json
+import re
 import threading
 import wave
 from pathlib import Path
@@ -219,13 +220,28 @@ def load_model(model_id: str, factory: Any = None) -> LocalKittenTTS:
     with _models_lock:
         if model_id in _models:
             return _models[model_id]
-    repo = MODELS[model_id][0] if model_id in MODELS else model_id
+    if model_id in MODELS:
+        repo = MODELS[model_id][0]
+    else:
+        # A model outside the catalogue (a language model of KittenML, or someone's repo).
+        repo = model_id if "/" in model_id else f"KittenML/{model_id}"
     if factory is None:
         factory = KittenEngine
     instance = LocalKittenTTS(repo, factory)
     with _models_lock:
         _models[model_id] = instance
     return instance
+
+
+_NOT_LATIN = re.compile(
+    r"[^\x20-\x7E\xA0-\xFF\u0100-\u017F\u2010-\u2018\u201C-\u201D]+"
+)
+
+
+def latin_only(text: str) -> str:
+    """The text without the characters the model mispronounces or rejects (anything outside
+    the Latin scripts), so a sentence with an emoji or a kanji does not fail as a whole."""
+    return _NOT_LATIN.sub("", text).strip()
 
 
 def to_wav(audio: Any, sample_rate: int = SAMPLE_RATE) -> bytes:
@@ -300,11 +316,17 @@ def synthesize(
         Log.info(f"[vox/kitten] using the model {model_id!r} for language {language!r}")
     else:
         model_id = str(kwargs.get("model") or kwargs.get("model_id") or default_model)
+    if model_id in ("", "builtin"):
+        # The built-in engine's own placeholder, kept in older settings: the default model.
+        model_id = default_model if default_model in MODELS else DEFAULT_MODEL
     chosen_voice = str(voice or kwargs.get("speaker") or DEFAULT_VOICE)
     try:
         chosen_speed = float(kwargs.get("speed") or speed)
     except (TypeError, ValueError):
         chosen_speed = speed
+    text = latin_only(text)
+    if not text:
+        return None
     try:
         engine = load_model(model_id, factory)
         return to_wav(engine.generate(text, chosen_voice, language, chosen_speed))

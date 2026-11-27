@@ -161,7 +161,7 @@ def test_a_language_uses_its_own_model_when_mapped() -> None:
         speed=1.3,
         factory=FakeKittenTTS,
     )
-    assert FakeKittenTTS.instances[0].repo == "kitten-tts-nano-it-0.1"
+    assert FakeKittenTTS.instances[0].repo == "KittenML/kitten-tts-nano-it-0.1"
 
 
 def test_the_phonemizer_follows_the_language_and_is_always_restored() -> None:
@@ -420,3 +420,54 @@ class TestFetchModel:
             and "kittentts" not in wanted
         )
         assert "onnxruntime" in wanted and "espeakng-loader" in wanted
+
+
+# --------------------------------------------------- what the Core used to do for this engine
+
+
+def test_text_the_model_cannot_say_is_cleaned_by_the_engine_itself() -> None:
+    assert kitten.latin_only("Ciao ☺ 世界 amici") == "Ciao   amici"
+    assert kitten.latin_only("perché “sì” è già") == "perché “sì” è già"
+    assert kitten.latin_only("世界") == ""
+
+
+def test_a_sentence_with_nothing_the_model_can_say_is_not_synthesised() -> None:
+    assert (
+        kitten.synthesize(
+            "世界",
+            None,
+            {},
+            default_model="kitten-tts-nano-0.8",
+            language_models={},
+            speed=1.0,
+            factory=FakeKittenTTS,
+        )
+        is None
+    )
+
+
+def test_the_builtin_placeholder_and_bare_or_full_model_names_resolve() -> None:
+    kitten._models.clear()
+    FakeKittenTTS.instances.clear()
+    kitten.synthesize(
+        "Hello",
+        None,
+        {"model": "builtin"},
+        default_model="kitten-tts-nano-0.8",
+        language_models={},
+        speed=1.0,
+        factory=FakeKittenTTS,
+    )
+    assert FakeKittenTTS.instances[0].repo == "KittenML/kitten-tts-nano-0.8"
+    kitten._models.clear()
+    FakeKittenTTS.instances.clear()
+    kitten.synthesize(
+        "Hello",
+        None,
+        {"model": "someone/their-model"},
+        default_model="kitten-tts-nano-0.8",
+        language_models={},
+        speed=1.0,
+        factory=FakeKittenTTS,
+    )
+    assert FakeKittenTTS.instances[0].repo == "someone/their-model"

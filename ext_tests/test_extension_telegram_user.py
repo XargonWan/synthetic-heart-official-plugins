@@ -970,3 +970,14 @@ class TestSmallThings:
         remote = current(rig)
         assert "call" not in remote.spec.capabilities and remote.spec.actions == {}
         assert (await remote.start_call("42"))["status"] == "failed"
+
+
+def test_the_userbot_asks_for_voice_notes_in_ogg_opus() -> None:
+    """Speech that reaches a chat instead of a call must be a voice note Telegram accepts."""
+    from core.extensions.manifest import load_manifest
+
+    from ext_tests import ROOT
+
+    manifest = load_manifest(ROOT / "extensions" / "telegram" / "synth-extension.toml")
+    (interface,) = manifest.provides.interfaces
+    assert interface.voice_format == "ogg_opus"

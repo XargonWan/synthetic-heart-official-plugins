@@ -748,3 +748,9 @@ def test_the_bot_takes_speech_as_a_voice_note() -> None:
     manifest = load_manifest(SOURCE / "synth-extension.toml")
     (interface,) = manifest.provides.interfaces
     assert interface.speech_as_media is True
+
+
+def test_the_bot_asks_for_voice_notes_in_ogg_opus() -> None:
+    manifest = load_manifest(SOURCE / "synth-extension.toml")
+    (interface,) = manifest.provides.interfaces
+    assert interface.voice_format == "ogg_opus"

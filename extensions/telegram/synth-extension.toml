@@ -23,6 +23,7 @@ voice_input_tts_only = true       # speech only for spoken messages
 negative_chat_id_is_group = true  # group ids are negative, private ids positive
 bot_username_suffix = "bot"       # Telegram bot usernames end in "bot"
 peer_ids = true                   # SYNTH_PEERS ids are Telegram user ids
+voice_format = "ogg_opus"             # Telegram voice notes are Ogg/Opus
 actions = ["answer_call_telegram"]
 
 [permissions]
