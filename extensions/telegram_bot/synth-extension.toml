@@ -5,7 +5,7 @@ id = "official/telegram_bot"
 name = "Telegram Bot"
 version = "0.1.0"
 description = "Chat with SyntH through a Telegram bot (BotFather token)."
-author = "SyntH"
+author = "XargonWan"
 experimental = true
 
 [compat]

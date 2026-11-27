@@ -5,7 +5,7 @@ id = "official/protocol_fish"
 name = "Fish Audio protocol"
 version = "0.1.0"
 description = "Lets SyntH use Fish Audio's cloud text-to-speech, with its voice catalogue."
-author = "SyntH"
+author = "XargonWan"
 
 [compat]
 core_api = ">=0.1,<1"

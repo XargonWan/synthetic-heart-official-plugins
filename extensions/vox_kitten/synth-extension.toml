@@ -5,7 +5,7 @@ id = "official/vox_kitten"
 name = "KittenTTS voice"
 version = "0.1.0"
 description = "Local, offline text-to-speech with the KittenTTS models: multi-voice, runs on the CPU."
-author = "SyntH"
+author = "XargonWan"
 
 [compat]
 core_api = ">=0.1,<1"

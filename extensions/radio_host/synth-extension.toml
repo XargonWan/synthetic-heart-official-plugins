@@ -5,7 +5,7 @@ id = "official/radio_host"
 name = "AzuraCast Radio DJ"
 version = "0.1.0"
 description = "Turns the synth into the live DJ of an AzuraCast station: it comments between songs on air and answers questions about what is playing."
-author = "SyntH"
+author = "XargonWan"
 
 [compat]
 core_api = ">=0.1,<1"

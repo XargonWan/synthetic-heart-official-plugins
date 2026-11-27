@@ -5,7 +5,7 @@ id = "official/auris_vosk"
 name = "Vosk speech recognition"
 version = "0.1.0"
 description = "Local, offline speech-to-text with Vosk: runs on the CPU, no account and no cloud."
-author = "SyntH"
+author = "XargonWan"
 
 [compat]
 core_api = ">=0.1,<1"

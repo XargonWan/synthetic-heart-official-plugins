@@ -5,7 +5,7 @@ id = "official/protocol_harmony"
 name = "Harmony AI protocol"
 version = "0.1.0"
 description = "Lets SyntH talk to Harmony AI Cloud (project-harmony.ai): its model listing and its text-to-speech and speech-to-text endpoints."
-author = "SyntH"
+author = "XargonWan"
 
 [compat]
 core_api = ">=0.1,<1"

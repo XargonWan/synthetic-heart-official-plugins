@@ -5,7 +5,7 @@ id = "official/synth_dashboard"
 name = "Control Deck"
 version = "0.1.0"
 description = "The Dashboard: a knob, toggle and readout for every adjustable setting, with plugin switches and an agent prompt runner."
-author = "SyntH"
+author = "Scarlet-Raine"
 
 [compat]
 core_api = ">=0.1,<1"

@@ -5,7 +5,7 @@ id = "official/fluxer"
 name = "Fluxer Bot"
 version = "0.1.0"
 description = "Chat with SyntH on a Fluxer instance (a Discord-compatible, self-hostable chat platform)."
-author = "SyntH"
+author = "XargonWan"
 experimental = true
 
 [compat]

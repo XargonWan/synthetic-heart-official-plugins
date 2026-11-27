@@ -5,7 +5,7 @@ id = "official/zen"
 name = "Zen LLM Engine"
 version = "0.1.0"
 description = "Connect SyntH to the Zen LLM Engine, a free browser-driven engine that talks to AI chat sites, so you can use SyntH without any API key."
-author = "SyntH"
+author = "XargonWan"
 
 [compat]
 core_api = ">=0.1,<1"

@@ -5,7 +5,7 @@ id = "official/matrix"
 name = "Matrix"
 version = "0.1.0"
 description = "Talk to SyntH in Matrix rooms (matrix.org or your own homeserver), with threads, replies, files and typing."
-author = "SyntH"
+author = "XargonWan"
 
 [compat]
 core_api = ">=0.1,<1"
