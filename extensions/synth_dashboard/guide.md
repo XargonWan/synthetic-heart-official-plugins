@@ -7,7 +7,7 @@ with live readouts, plugin run/switch commands and an agent prompt runner.
 ## Use it
 
 1. Switch the extension on and grant it **web.static** and **web.origin** (Plugins > Store).
-2. Open **More… > Dashboard** in the WebUI's top bar.
+2. Open **More > Dashboard** in the WebUI's top bar.
 
 ## Notes
 
