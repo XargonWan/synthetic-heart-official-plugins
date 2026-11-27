@@ -16,7 +16,7 @@ on:
   pull_request:
     branches: [develop, main]
   workflow_dispatch:
-  # The extensions' sources are in the SyntH repository: a push there can ask for a rebuild
+  # The packer is in the SyntH repository: a push there can ask for a rebuild
   # with  POST /repos/<owner>/<repo>/dispatches  {"event_type": "core-updated",
   # "client_payload": {"branch": "develop"}}.
   repository_dispatch:
@@ -57,8 +57,8 @@ jobs:
         with:
           ref: ${{ github.event_name == 'repository_dispatch' && steps.channel.outputs.branch || '' }}
 
-      # The sources, and the packer (core/extensions), live in the SyntH repository. The
-      # repository variable SYNTH_CORE_REF overrides which ref of it is built (for example
+      # The packer (core/extensions), the gateway the tests run against and the Stage client's
+      # sources live in the SyntH repository. The repository variable SYNTH_CORE_REF overrides which ref of it is built (for example
       # the branch that still holds the extension platform before it is merged).
       - name: Check out SyntH
         uses: actions/checkout@v4
@@ -85,6 +85,15 @@ jobs:
           umask 077
           printf '%s' "$KEY_B64" | base64 -d > "$RUNNER_TEMP/publisher.key"
           echo "SYNTH_PUBLISHER_KEY_FILE=$RUNNER_TEMP/publisher.key" >> "$GITHUB_ENV"
+
+      # The extensions' own tests run against the Core's gateway, in the Core's environment.
+      - name: Test the extensions
+        env:
+          SYNTH_CORE: ${{ github.workspace }}/synth-core
+        run: |
+          cd "$SYNTH_CORE"
+          uv sync --frozen
+          uv run pytest -q -c "$GITHUB_WORKSPACE/pytest.ini" --rootdir "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/ext_tests"
 
       - name: Build the packages and the catalog
         env:

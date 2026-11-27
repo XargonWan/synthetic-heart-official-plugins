@@ -3,7 +3,8 @@
 #
 #   SYNTH_CORE=~/gits/Synthetic_Heart scripts/build_release.sh [OUTPUT_DIR]
 #
-# The extensions' sources are in the SyntH repository (extensions_src/), checked out at
+# The extensions' sources are in this repository (extensions/). The packer (core/extensions)
+# and the Stage client's sources (frontend/) are in the SyntH repository, checked out at
 # SYNTH_CORE. The output directory (default: dist/) is exactly what the release carries:
 #   official-<name>.zip   one package per extension (its version is in its manifest)
 #   synth-repo.json       the catalog: every package with its SHA-256, size and platform
@@ -21,15 +22,15 @@ KEY="${SYNTH_PUBLISHER_KEY_FILE:-$HOME/.config/synth/publisher.key}"
 EXTENSIONS=(synth_stage synth_dashboard openai_api fluxer telegram_bot zen telegram radio_host protocol_harmony protocol_fish matrix)
 DEFAULTS=(official/synth_stage official/synth_dashboard official/openai_api official/fluxer official/telegram_bot official/zen official/protocol_harmony official/protocol_fish)
 
-if [ ! -f "$CORE/extensions_src/synth_stage/web/index.html" ]; then
+if [ ! -f "$ROOT/extensions/synth_stage/web/index.html" ]; then
   echo "building the Stage client"
-  "$CORE/scripts/build_stage_extension.sh"
+  "$CORE/scripts/build_stage_extension.sh" "$ROOT/extensions/synth_stage"
 fi
 
 sources=()
 for name in "${EXTENSIONS[@]}"; do
-  [ -f "$CORE/extensions_src/$name/synth-extension.toml" ] || { echo "no extension $name in $CORE"; exit 1; }
-  sources+=("$CORE/extensions_src/$name")
+  [ -f "$ROOT/extensions/$name/synth-extension.toml" ] || { echo "no extension $name in $ROOT/extensions"; exit 1; }
+  sources+=("$ROOT/extensions/$name")
 done
 
 sign=()

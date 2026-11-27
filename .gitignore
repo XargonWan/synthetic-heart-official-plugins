@@ -2,3 +2,7 @@
 # the index by URL and uploaded as release assets. publish.sh puts them here.
 /dist/
 __pycache__/
+# Built Stage client and the libraries the packer builds into each extension
+/extensions/synth_stage/web/
+/extensions/*/lib/
+.pytest_cache/

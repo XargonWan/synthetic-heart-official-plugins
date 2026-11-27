@@ -72,13 +72,16 @@ catalog says which (`linux-x86_64-py312`, the platform of SyntH's image).
 (and on `workflow_dispatch` or a `core-updated` repository dispatch). A pull request only
 builds, unsigned.
 
-1. It checks out the SyntH repository (`XargonWan/synthetic_heart`): the extensions'
-   sources are `extensions_src/` there for now, and the packer is `core/extensions`.
-2. `scripts/build_release.sh` builds the Stage client, packs every extension with its
+1. It checks out the SyntH repository (`XargonWan/synthetic_heart`): the packer is
+   `core/extensions`, the gateway the tests run against is there too, and so are the
+   Stage client's sources (`frontend/`). The extensions' sources are `extensions/` here.
+2. It runs the extensions' tests (`ext_tests/`) in SyntH's environment:
+   `cd $SYNTH_CORE && uv run pytest -c <this repo>/pytest.ini --rootdir <this repo> <this repo>/ext_tests`.
+3. `scripts/build_release.sh` builds the Stage client, packs every extension with its
    libraries and writes the signed catalog.
-3. `scripts/verify_release.py` refuses to go on unless the catalog verifies with this
+4. `scripts/verify_release.py` refuses to go on unless the catalog verifies with this
    repository's `public.key` and every file matches it.
-4. It moves the rolling tag to the commit, creates or updates the release, uploads the
+5. It moves the rolling tag to the commit, creates or updates the release, uploads the
    assets (replacing the old ones, deleting those no longer built).
 
 **Set up once** (repository settings):

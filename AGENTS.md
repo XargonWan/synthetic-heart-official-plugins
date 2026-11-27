@@ -50,13 +50,13 @@ icon.svg
 
 Look at `official/fluxer` (an interface), `official/openai_api` (a request/response
 interface with a web server), `official/zen` (registers an endpoint) and
-`official/synth_stage` (a static page) in the SyntH repository's `extensions_src/`.
+`official/synth_stage` (a static page) in `extensions/` here.
 
 ## Tests
 
 Test against a real process and a **fake of the outside service** (a fake chat server, a
-fake client library), driving the extension through the gateway; the SyntH repository's
-`tests/test_extension_*.py` show how. Check a test can fail: break the code and watch it go
+fake client library), driving the extension through the gateway; `ext_tests/` shows how.
+They run against a SyntH checkout (`SYNTH_CORE`), whose gateway and helpers they use. Check a test can fail: break the code and watch it go
 red.
 
 ## Publishing
