@@ -1,0 +1,18 @@
+schema = 1
+
+[extension]
+id = "official/skin_miku"
+name = "Hatsune Miku (skin)"
+version = "0.1.0"
+description = "Hatsune Miku, a virtual singer (VRM model by rurune)."
+author = "XargonWan"
+
+[compat]
+core_api = ">=0.1,<1"
+
+# A skin is files only: no process runs. SyntH copies the folder into its skins directory
+# while the extension is installed and on, and removes it again on uninstall.
+[[provides.skins]]
+name = "Miku"
+type = "vrm"
+path = "skin"
