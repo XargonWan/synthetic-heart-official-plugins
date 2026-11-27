@@ -25,13 +25,13 @@ ops = ["models", "capabilities", "health", "ping", "tts", "list_speakers"]
 # endpoints.protocol is what lets it answer for the "kitten" engine; it holds no key (the
 # engine is local and has none). network: the models are fetched from HuggingFace on first use.
 capabilities = ["log", "config", "endpoints.manage", "endpoints.protocol"]
-network = ["huggingface.co:443", "cdn-lfs.huggingface.co:443"]
+network = ["huggingface.co:443", "*.huggingface.co:443", "*.hf.co:443"]
 
 [python]
-# kittentts is not on PyPI under this name at the version SyntH used: the release asset is
-# https://github.com/KittenML/KittenTTS/releases/download/0.8.1/kittentts-0.8.1-py3-none-any.whl.
-# It pulls onnxruntime and a CPU torch; espeak-ng must be installed on the machine.
-requirements = ["kittentts", "numpy", "phonemizer", "soundfile"]
+# The inference code is vendored (kittentts_core): the kittentts package would pull spaCy and
+# PyTorch, which it never uses. espeakng-loader carries the espeak-ng library and data, so
+# nothing has to be installed on the machine.
+requirements = ["onnxruntime", "numpy", "phonemizer-fork", "espeakng-loader", "soundfile", "httpx>=0.27"]
 
 [config.KITTEN_MODEL]
 type = "string"

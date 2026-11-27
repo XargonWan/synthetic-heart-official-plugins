@@ -1,7 +1,8 @@
 """KittenTTS: local, neural, multi-voice text-to-speech (ONNX, CPU).
 
-The model is fetched from HuggingFace on first use (``kittentts`` downloads and caches it)
-and kept in memory per model id. Voices are language-agnostic: the model adapts its phonetics
+The model is fetched from HuggingFace on first use into the extension's data directory and
+kept in memory per model id. The inference code is KittenTTS's own, vendored in
+``kittentts_core`` (onnxruntime + espeak-ng; no spaCy, no PyTorch: see its NOTICE). Voices are language-agnostic: the model adapts its phonetics
 to the text, and the espeak-ng phonemizer is swapped per call so non-English text is not
 read with English rules (kittentts 0.8.x hardcodes ``en-us`` inside its constructor).
 """
@@ -12,6 +13,7 @@ import io
 import json
 import threading
 import wave
+from pathlib import Path
 from typing import Any
 
 DEFAULT_MODEL = "kitten-tts-mini-0.8"
@@ -71,6 +73,17 @@ ESPEAK_LANG: dict[str, str] = {
 }
 
 
+HF_BASE = "https://huggingface.co"
+#: How long one file download may take (the models are 15 to 80 MB).
+DOWNLOAD_TIMEOUT_SEC = 600.0
+
+
+class Paths:
+    """Where the models are kept; ``ext_main`` points it at the extension's data directory."""
+
+    models: Path = Path("models")
+
+
 class Log:
     """Where this module reports; ``ext_main`` points it at ``ctx.log``."""
 
@@ -94,8 +107,65 @@ def espeak_lang_code(lang: str | None) -> str:
     return ESPEAK_LANG.get(lang.split("-")[0].lower(), "en-us")
 
 
+def download(url: str, target: Path) -> None:
+    """Fetch ``url`` into ``target`` (atomically: a partial file is never left in place)."""
+    import httpx
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    partial = target.with_suffix(target.suffix + ".part")
+    try:
+        with httpx.stream(
+            "GET", url, follow_redirects=True, timeout=DOWNLOAD_TIMEOUT_SEC
+        ) as response:
+            response.raise_for_status()
+            with partial.open("wb") as out:
+                for chunk in response.iter_bytes(1 << 20):
+                    out.write(chunk)
+        partial.replace(target)
+    finally:
+        partial.unlink(missing_ok=True)
+
+
+def fetch_model(repo: str, directory: Path) -> tuple[Path, Path, dict[str, Any]]:
+    """The model file, the voices file and the config of a HuggingFace repo, downloaded
+    into ``directory`` when they are not there yet."""
+    folder = directory / repo.replace("/", "__")
+    config_path = folder / "config.json"
+    if not config_path.is_file():
+        Log.info(f"[vox/kitten] downloading the model {repo!r}")
+        download(f"{HF_BASE}/{repo}/resolve/main/config.json", config_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    if config.get("type") not in ("ONNX1", "ONNX2"):
+        raise ValueError(f"unsupported model type {config.get('type')!r}")
+    files: list[Path] = []
+    for name in (config["model_file"], config["voices"]):
+        path = folder / name
+        if not path.is_file():
+            download(f"{HF_BASE}/{repo}/resolve/main/{name}", path)
+        files.append(path)
+    return files[0], files[1], config
+
+
+class KittenEngine:
+    """One KittenTTS model, loaded from the data directory (downloaded on first use)."""
+
+    def __init__(self, repo: str, directory: Path | None = None) -> None:
+        from kittentts_core.onnx_model import KittenTTS_1_Onnx
+
+        model_path, voices_path, config = fetch_model(repo, directory or Paths.models)
+        self.model = KittenTTS_1_Onnx(
+            model_path=str(model_path),
+            voices_path=str(voices_path),
+            speed_priors=config.get("speed_priors", {}),
+            voice_aliases=config.get("voice_aliases", {}),
+        )
+
+    def generate(self, text: str, voice: str, speed: float) -> Any:
+        return self.model.generate(text, voice=voice, speed=speed, clean_text=False)
+
+
 class LocalKittenTTS:
-    """Wrapper around the ``kittentts`` package: one loaded model, thread-safe phonemizer swaps."""
+    """One loaded model, with the phonemizer swapped per call (thread-safe)."""
 
     def __init__(self, repo: str, factory: Any) -> None:
         self._engine = factory(repo)
@@ -151,9 +221,7 @@ def load_model(model_id: str, factory: Any = None) -> LocalKittenTTS:
             return _models[model_id]
     repo = MODELS[model_id][0] if model_id in MODELS else model_id
     if factory is None:
-        from kittentts import KittenTTS  # ty: ignore[unresolved-import]
-
-        factory = KittenTTS
+        factory = KittenEngine
     instance = LocalKittenTTS(repo, factory)
     with _models_lock:
         _models[model_id] = instance

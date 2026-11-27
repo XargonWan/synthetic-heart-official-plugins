@@ -19,8 +19,8 @@ OUT="${1:-$ROOT/dist}"
 KEY="${SYNTH_PUBLISHER_KEY_FILE:-$HOME/.config/synth/publisher.key}"
 
 # What is published, and what a fresh SyntH installs on its own.
-EXTENSIONS=(synth_stage synth_dashboard openai_api fluxer telegram_bot zen telegram radio_host protocol_harmony protocol_fish matrix)
-DEFAULTS=(official/synth_stage official/synth_dashboard official/openai_api official/fluxer official/telegram_bot official/zen official/protocol_harmony official/protocol_fish)
+EXTENSIONS=(synth_stage synth_dashboard openai_api fluxer telegram_bot zen telegram radio_host protocol_harmony protocol_fish matrix vox_kitten auris_vosk)
+DEFAULTS=(official/synth_stage official/synth_dashboard official/openai_api official/fluxer official/telegram_bot official/zen official/protocol_harmony official/protocol_fish official/vox_kitten official/auris_vosk)
 
 if [ ! -f "$ROOT/extensions/synth_stage/web/index.html" ]; then
   echo "building the Stage client"

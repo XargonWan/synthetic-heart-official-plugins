@@ -16,6 +16,8 @@ and what a fresh installation installs its defaults from.
 | `official/telegram` | Telegram **user account** (login from the WebUI, voice and video calls) | no (162 MB) |
 | `official/protocol_harmony` | Harmony AI Cloud protocol for external endpoints (model catalogue, TTS, STT) | yes |
 | `official/protocol_fish` | Fish Audio protocol for external endpoints (cloud TTS and voices) | yes |
+| `official/vox_kitten` | KittenTTS local voice (ONNX on the CPU, eight voices; the model is fetched on first use) | yes |
+| `official/auris_vosk` | Vosk local speech recognition (offline, CPU; the model of your language is fetched on first use) | yes |
 | `official/matrix` | Matrix interface (rooms, threads, replies, files) | no |
 | `official/radio_host` | AzuraCast Radio DJ: the synth speaks between songs on your station (needs ffmpeg) | no |
 

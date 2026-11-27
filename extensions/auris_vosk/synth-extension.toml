@@ -1,0 +1,43 @@
+schema = 1
+
+[extension]
+id = "official/auris_vosk"
+name = "Vosk speech recognition"
+version = "0.1.0"
+description = "Local, offline speech-to-text with Vosk: runs on the CPU, no account and no cloud."
+author = "SyntH"
+
+[compat]
+core_api = ">=0.1,<1"
+
+[entry]
+module = "ext_main"
+function = "main"
+
+[provides]
+endpoints = ["vosk"]
+
+[[provides.protocols]]
+name = "vosk"
+ops = ["models", "capabilities", "health", "ping", "stt"]
+
+[permissions]
+# endpoints.protocol is what lets it answer for the "vosk" engine; it holds no key (the
+# engine is local and has none). network: a model is fetched from alphacephei.com on first use.
+capabilities = ["log", "config", "endpoints.manage", "endpoints.protocol"]
+network = ["alphacephei.com:443"]
+
+[python]
+requirements = ["vosk>=0.3.45", "httpx>=0.27"]
+
+[config.VOSK_LANGUAGE]
+type = "string"
+label = "Language"
+description = "Language of the speech to recognise: en, it, fr, es, de, pt, zh, ja or ko. The small model of that language is downloaded on first use."
+default = "en"
+
+[config.VOSK_MODEL]
+type = "string"
+label = "Model"
+description = "A specific model id (for example vosk-en-us-large, about 1.8 GB) instead of the small one of the language. Empty: the language decides."
+default = ""

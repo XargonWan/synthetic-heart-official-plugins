@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import importlib
 import io
 import sys
@@ -319,3 +320,103 @@ async def test_a_failed_synthesis_is_an_empty_answer(
         lambda *a, **k: (_ for _ in ()).throw(RuntimeError("no model")),
     )
     assert await ctx.handler("kitten", "tts", {}, "", {"text": "x", "kwargs": {}}) == {}
+
+
+# ------------------------------------------------------------------ the model download
+
+
+class TestFetchModel:
+    """The model comes from HuggingFace over plain HTTPS into the extension's data directory."""
+
+    CONFIG = {
+        "type": "ONNX1",
+        "model_file": "model.onnx",
+        "voices": "voices.npz",
+        "speed_priors": {"expr-voice-2-f": 1.1},
+        "voice_aliases": {"Bella": "expr-voice-2-f"},
+    }
+
+    def _serve(
+        self, monkeypatch: pytest.MonkeyPatch, config: dict[str, Any]
+    ) -> list[str]:
+        import httpx
+
+        asked: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            asked.append(str(request.url))
+            name = request.url.path.rsplit("/", 1)[-1]
+            if name == "config.json":
+                return httpx.Response(200, json=config)
+            return httpx.Response(200, content=f"<{name}>".encode())
+
+        @contextlib.contextmanager
+        def stream(method: str, url: str, **kw: Any) -> Any:
+            with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+                with client.stream(method, url) as response:
+                    yield response
+
+        monkeypatch.setattr(httpx, "stream", stream)
+        return asked
+
+    def test_the_three_files_are_downloaded_once(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        asked = self._serve(monkeypatch, self.CONFIG)
+        model, voices, config = kitten.fetch_model(
+            "KittenML/kitten-tts-nano-0.8", tmp_path
+        )
+        assert (
+            model.read_bytes() == b"<model.onnx>"
+            and voices.read_bytes() == b"<voices.npz>"
+        )
+        assert config["voice_aliases"] == {"Bella": "expr-voice-2-f"}
+        assert model.parent == tmp_path / "KittenML__kitten-tts-nano-0.8"
+        assert all(
+            url.startswith(
+                "https://huggingface.co/KittenML/kitten-tts-nano-0.8/resolve/main/"
+            )
+            for url in asked
+        )
+        assert len(asked) == 3
+        kitten.fetch_model("KittenML/kitten-tts-nano-0.8", tmp_path)
+        assert len(asked) == 3  # nothing is fetched again
+
+    def test_an_unsupported_model_type_is_refused(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        self._serve(monkeypatch, {**self.CONFIG, "type": "PYTORCH"})
+        with pytest.raises(ValueError, match="unsupported model type"):
+            kitten.fetch_model("KittenML/x", tmp_path)
+
+    def test_a_failed_download_leaves_no_partial_file(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        import httpx
+
+        def stream(method: str, url: str, **kw: Any) -> Any:
+            transport = httpx.MockTransport(lambda request: httpx.Response(503))
+            return httpx.Client(transport=transport).stream(method, url)
+
+        monkeypatch.setattr(httpx, "stream", stream)
+        with pytest.raises(httpx.HTTPStatusError):
+            kitten.fetch_model("KittenML/x", tmp_path)
+        assert list(tmp_path.rglob("*")) == [tmp_path / "KittenML__x"] or not any(
+            p.is_file() for p in tmp_path.rglob("*")
+        )
+
+    def test_the_vendored_inference_code_does_not_need_torch_or_spacy(self) -> None:
+        for name in ("onnx_model.py", "preprocess.py"):
+            text = (SOURCE / "kittentts_core" / name).read_text(encoding="utf-8")
+            assert "misaki" not in text.replace("misaki import removed", "")
+            assert "import torch" not in text and "import spacy" not in text
+
+    def test_the_manifest_asks_for_no_heavy_libraries(self) -> None:
+        manifest = load_manifest(SOURCE / "synth-extension.toml")
+        wanted = " ".join(manifest.python_requirements)
+        assert (
+            "torch" not in wanted
+            and "spacy" not in wanted
+            and "kittentts" not in wanted
+        )
+        assert "onnxruntime" in wanted and "espeakng-loader" in wanted

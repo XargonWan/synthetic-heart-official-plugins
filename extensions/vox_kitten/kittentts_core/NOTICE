@@ -1,0 +1,6 @@
+This folder contains code from KittenTTS 0.8.1 (https://github.com/KittenML/KittenTTS),
+Apache License 2.0 (see LICENSE): ``preprocess.py`` unchanged, ``onnx_model.py`` with the
+unused ``misaki`` import removed, the espeak-ng set-up and the chatty ``print`` calls taken
+out, and the model download rewritten to use plain HTTPS instead of ``huggingface_hub``.
+The ``kittentts`` package itself is not installed: it depends on spaCy and PyTorch, which
+this inference path never uses.

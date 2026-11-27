@@ -18,6 +18,7 @@ ENDPOINT = "kitten"
 
 async def main(ctx: Context) -> None:
     kitten.Log.target = ctx.log
+    kitten.Paths.models = ctx.data_dir / "models"
 
     async def settings() -> tuple[str, dict[str, str], float]:
         values = await ctx.config.all()

@@ -6,7 +6,7 @@ language, ONNX on the CPU, no account and no cloud.
 
 ## Use it
 
-1. Switch the extension on and grant what it asks for. It creates a voice engine called
+1. It is installed and on at the first start. It creates a voice engine called
    **kitten** (Engines > Voice).
 2. Pick **kitten** as the active voice engine and a voice in the voice picker. The model is
    downloaded from HuggingFace the first time it speaks.
@@ -18,8 +18,9 @@ language, ONNX on the CPU, no account and no cloud.
 
 ## Needs
 
-`espeak-ng` on the machine (the phonemizer), and the `kittentts` package with its CPU torch,
-which makes this a large extension: that is why it is **not installed by default**.
+Nothing on the machine: the extension carries the inference code (onnxruntime) and the
+espeak-ng phonemizer. It is installed by default, and the first sentence it speaks downloads
+the model (about 25 to 80 MB) from HuggingFace into its own data directory.
 
 ## What changed from the built-in engine
 
