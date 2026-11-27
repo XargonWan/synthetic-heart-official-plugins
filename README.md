@@ -2,7 +2,7 @@
 
 The official extension repository of [Synthetic Heart](https://github.com/xargonwan/synthetic_heart)
 (SyntH): a **catalog** of extensions, each published as its own `.zip` asset of a
-**rolling GitHub release**. It is what the Plugins > Store of a SyntH installation reads,
+**rolling GitHub release**. It is what the Plugins > Catalog of a SyntH installation reads,
 and what a fresh installation installs its defaults from.
 
 | Extension | What it does | Installed by default |
