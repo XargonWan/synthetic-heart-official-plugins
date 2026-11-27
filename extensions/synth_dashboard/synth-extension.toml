@@ -25,6 +25,7 @@ slot = "more"
 id = "dashboard"
 title = "Dashboard"
 icon = "🎛️"
+presentation = "frame"   # a whole view under the top bar, not a window
 
 [permissions]
 capabilities = ["log", "web.static", "web.origin"]

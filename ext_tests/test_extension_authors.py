@@ -18,10 +18,9 @@ def test_the_author_is_named(name: str) -> None:
     assert manifest.authors == expected
 
 
-def test_the_stage_is_a_frame_not_a_window() -> None:
-    """The Stage fills the main area like the avatar's 3D page: it is not a resizable window."""
-    manifest = load_manifest(
-        ROOT / "extensions" / "synth_stage" / "synth-extension.toml"
-    )
+@pytest.mark.parametrize("name", ["synth_stage", "synth_dashboard"])
+def test_the_stage_and_the_dashboard_are_frames_not_windows(name: str) -> None:
+    """They fill the main area like the avatar's 3D page: they are not resizable windows."""
+    manifest = load_manifest(ROOT / "extensions" / name / "synth-extension.toml")
     (entry,) = manifest.provides.ui
     assert (entry.slot, entry.presentation) == ("more", "frame")
