@@ -1,0 +1,6 @@
+dist
+.git
+ext_tests
+scripts
+**/__pycache__
+extensions/*/lib
