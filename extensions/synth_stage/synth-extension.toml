@@ -26,6 +26,7 @@ slot = "more"
 id = "stage"
 title = "SyntH Stage"
 icon = "🎭"
+presentation = "frame"   # a whole view under the top bar, not a window
 
 [permissions]
 capabilities = ["log", "web.static", "web.origin"]
