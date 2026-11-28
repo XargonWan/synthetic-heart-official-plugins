@@ -226,6 +226,11 @@ class AudioBuffer:
         self._last_real_read = time.monotonic()
         return chunk
 
+    def clear(self) -> None:
+        """Drop everything queued and not yet played (the caller spoke over the SyntH)."""
+        with self._lock:
+            self._data.clear()
+
     def pending_seconds(self) -> float:
         with self._lock:
             return len(self._data) / (RATE * WIDTH * 2)
@@ -316,6 +321,17 @@ async def decode_for_playback(path: Path) -> bytes:
     if process.returncode != 0 or not out:
         raise RuntimeError(f"ffmpeg could not read {path.name}: {err.decode()[-200:]}")
     return out
+
+
+def stream_to_playback(pcm: bytes, rate: int, state: Any = None) -> tuple[bytes, Any]:
+    """A chunk of the model's voice (16-bit mono PCM at ``rate``) as 48 kHz stereo.
+
+    ``state`` is the resampler's memory: pass back what the last chunk returned so the
+    chunks join without a click."""
+    pcm = pcm[: len(pcm) - len(pcm) % WIDTH]
+    if rate != RATE:
+        pcm, state = audioop.ratecv(pcm, WIDTH, 1, rate, RATE, state)
+    return audioop.tostereo(pcm, WIDTH, 1, 1), state
 
 
 def seconds_of(pcm: bytes) -> float:

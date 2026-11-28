@@ -13,7 +13,7 @@ from typing import Any
 
 import pytest
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "discord"
+SOURCE = Path(__file__).resolve().parent.parent
 
 
 def _load() -> tuple[Any, Any, Any]:
@@ -184,6 +184,8 @@ class FakeCalls:
         self.audio_chunks: list[tuple[str, bytes, str]] = []
         self.on_play_during_open: Any = None
         self.provided: list[str] = []
+        self.streamed: list[bool] = []
+        self.mode = "classic"
 
     async def open(
         self, path: str, user_id: str, *, kind: str, announce: bool
@@ -193,7 +195,7 @@ class FakeCalls:
             await (
                 self.on_play_during_open()
             )  # the answering tone arrives before we return
-        return {"call_id": "call-1"}
+        return {"call_id": "call-1", "mode": self.mode}
 
     async def end(self, call_id: str) -> bool:
         self.ended.append(call_id)
@@ -204,8 +206,9 @@ class FakeCalls:
     ) -> None:
         self.audio_chunks.append((call_id, pcm, speaker_id))
 
-    async def provider(self, interface_id: str) -> None:
+    async def provider(self, interface_id: str, stream: bool = False) -> None:
         self.provided.append(interface_id)
+        self.streamed.append(stream)
 
 
 class FakeInterfaces:
@@ -387,6 +390,66 @@ class TestCall:
         h._emit(state)("7", "Alice", b"\x00" * 3200)  # noqa: SLF001
         await asyncio.sleep(0.05)
         assert len(h.ctx.calls.audio_chunks) == 1
+
+
+class TestLiveMode:
+    """A Live engine holds the call: its voice arrives as chunks, and a barge-in drops them."""
+
+    def chunk(self, seconds: float = 0.1, rate: int = 24000) -> bytes:
+        return b"\x10\x00" * int(seconds * rate)
+
+    def test_the_models_voice_becomes_48_khz_stereo_and_joins_without_a_gap(self) -> None:
+        first, state = voice.stream_to_playback(self.chunk(), 24000)
+        second, state = voice.stream_to_playback(self.chunk(), 24000, state)
+        assert len(first) == pytest.approx(voice.RATE * 0.1 * 4, abs=16)
+        assert voice.seconds_of(first + second) == pytest.approx(0.2, abs=0.002)
+        assert state is not None
+        # a half sample at the end of a chunk is dropped, not played as noise
+        odd, _ = voice.stream_to_playback(self.chunk() + b"\x01", 24000)
+        assert len(odd) % 4 == 0
+        # 48 kHz mono needs no resampling, only the second channel
+        same, none_state = voice.stream_to_playback(b"\x02\x00" * 10, 48000)
+        assert same == b"\x02\x00\x02\x00" * 10 and none_state is None
+
+    def test_clearing_the_buffer_drops_what_is_queued(self) -> None:
+        buffer = voice.AudioBuffer()
+        buffer.write(b"\x01\x00" * 4800)
+        assert buffer.pending_seconds() > 0
+        buffer.clear()
+        assert buffer.pending_seconds() == 0 and buffer.read(100) == b""
+
+    @pytest.mark.asyncio
+    async def test_a_live_call_plays_the_stream_and_a_barge_in_empties_it(
+        self, world: SimpleNamespace, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(calls.voice, "CallSink", lambda emit: object())
+        h = host(world)
+        h._loop = __import__("asyncio").get_running_loop()  # noqa: SLF001
+        h.ctx.calls.mode = "live"
+        await h.start_call(55, "7")
+        state = h.states[11]
+        assert state["mode"] == "live"
+        await h.on_stream("discord_bot", "call-1", self.chunk(0.25), 24000)
+        await h.on_stream("discord_bot", "call-1", self.chunk(0.25), 24000)
+        assert state["buffer"].pending_seconds() == pytest.approx(0.5, abs=0.01)
+        await h.on_flush("discord_bot", "call-1")
+        assert state["buffer"].pending_seconds() == 0 and state["resample"] is None
+        # what comes after the interruption plays normally
+        await h.on_stream("discord_bot", "call-1", self.chunk(0.1), 24000)
+        assert state["buffer"].pending_seconds() == pytest.approx(0.1, abs=0.01)
+
+    @pytest.mark.asyncio
+    async def test_a_classic_call_is_marked_so_and_a_stray_stream_is_ignored(
+        self, world: SimpleNamespace, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(calls.voice, "CallSink", lambda emit: object())
+        h = host(world)
+        h._loop = __import__("asyncio").get_running_loop()  # noqa: SLF001
+        await h.start_call(55, "7")
+        assert h.states[11]["mode"] == "classic"
+        await h.on_stream("discord_bot", "no-such-call", self.chunk(), 24000)
+        await h.on_flush("discord_bot", "no-such-call")
+        assert h.states[11]["buffer"].pending_seconds() == 0.0
 
 
 class TestVoiceEvents:

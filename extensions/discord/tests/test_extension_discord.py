@@ -19,7 +19,7 @@ from typing import Any
 
 import pytest
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "discord"
+SOURCE = Path(__file__).resolve().parent.parent
 import discord  # noqa: E402  (the Core's environment has it; the package bundles its own)
 
 
@@ -143,6 +143,7 @@ class Ctx:
             inbound=self._inbound, register=self._register
         )
         self.provided: list[str] = []
+        self.provider_args: list[dict[str, Any]] = []
         self.calls = SimpleNamespace(provider=self._provider)
 
     async def _get(self, key: str) -> Any:
@@ -152,8 +153,9 @@ class Ctx:
         self.inbound.append({"interface_id": interface_id, "path": path, **kw})
         return {"queued": True}
 
-    async def _provider(self, interface_id: str) -> None:
+    async def _provider(self, interface_id: str, **kw: Any) -> None:
         self.provided.append(interface_id)
+        self.provider_args.append(kw)
 
     async def _register(self, interface_id: str, **kw: Any) -> dict[str, Any]:
         self.registered.append({"interface_id": interface_id, **kw})
@@ -531,6 +533,8 @@ class TestLifecycle:
         )
         assert set(reg["actions"]) == {"join_voice_discord", "leave_voice_discord"}
         assert rig.ctx.provided == ["discord_bot"]  # it hosts calls
+        # it can play a stream, which is what a Live engine's voice needs
+        assert rig.ctx.provider_args[0].get("stream") is True
 
     @pytest.mark.asyncio
     async def test_when_the_core_refuses_the_interface_it_disconnects(
@@ -587,7 +591,9 @@ def test_the_extension_loads_in_its_sandbox(tmp_path: Path) -> None:
     )
     if done.returncode != 0:
         pytest.skip(f"cannot build lib/ offline: {done.stderr.strip()[-200:]}")
-    core = Path(__file__).resolve().parents[2] / "Synthetic_Heart"
+    from ext_tests import CORE
+
+    core = CORE
     code = (
         "import sys; sys.path[:0] = [sys.argv[1], sys.argv[2], sys.argv[3]]; "
         "import convert, voice, calls, ext_main, discord; "

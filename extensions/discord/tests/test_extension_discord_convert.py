@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "discord"
+SOURCE = Path(__file__).resolve().parent.parent
 
 
 def _load():  # type: ignore[no-untyped-def]

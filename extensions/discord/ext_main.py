@@ -530,7 +530,8 @@ class Bridge:
             ],
             actions=ACTIONS,
         )
-        await self.ctx.calls.provider(convert.INTERFACE_ID)
+        # stream=True: a Live engine's voice arrives as chunks to play as they come.
+        await self.ctx.calls.provider(convert.INTERFACE_ID, stream=True)
 
 
 def build_client() -> discord.Client:

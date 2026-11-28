@@ -3,7 +3,7 @@ schema = 1
 [extension]
 id = "official/discord"
 name = "Discord Bot"
-version = "0.1.0"
+version = "0.2.0"
 description = "Chat with SyntH on Discord: servers, channels, threads and direct messages, with files, replies, reactions and the synth avatar, and talk to it in a voice channel."
 author = "XargonWan"
 experimental = true

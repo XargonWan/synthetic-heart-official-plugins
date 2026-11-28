@@ -42,6 +42,8 @@ class VoiceHost:
         self._loop = asyncio.get_running_loop()
         voice.apply_patches()
         self.ctx.calls.on_play(self.on_play)
+        self.ctx.calls.on_stream(self.on_stream)
+        self.ctx.calls.on_flush(self.on_flush)
         self.ctx.calls.on_ended(self.on_core_ended)
         self.ctx.interfaces.on_call_control(self.dial, self.hang_up)
 
@@ -146,6 +148,8 @@ class VoiceHost:
             "buffer": buffer,
             "call_id": None,
             "user_id": initial_user,
+            "mode": "classic",
+            "resample": None,
         }
         # The answering tone arrives (on_play) before open() returns: the state is
         # already there for it to be found.
@@ -160,6 +164,8 @@ class VoiceHost:
             self.ctx.log.error(f"the call was not opened: {type(exc).__name__}: {exc}")
             return {"status": "failed", "message": f"Call not started: {exc}"[:200]}
         state["call_id"] = opened["call_id"]
+        # "live": a Live engine holds the call and its voice arrives as on_stream.
+        state["mode"] = opened.get("mode", "classic")
         client.listen(voice.CallSink(self._emit(state)))
         self.ctx.log.info(f"call started in guild {guild_id} channel {channel.name}")
         return {"status": "success", "message": f"Call started in {channel.name}"}
@@ -250,6 +256,26 @@ class VoiceHost:
         pcm = await voice.decode_for_playback(path)
         state["buffer"].write(pcm)
         return voice.seconds_of(pcm)
+
+    async def on_stream(
+        self, interface_id: str, call_id: str, pcm: bytes, rate: int
+    ) -> None:
+        """The model's voice in a Live call: queued after what is already playing."""
+        state = self._state_of(call_id, None)
+        if state is None:
+            return
+        converted, state["resample"] = voice.stream_to_playback(
+            pcm, rate, state["resample"]
+        )
+        state["buffer"].write(converted)
+
+    async def on_flush(self, interface_id: str, call_id: str) -> None:
+        """Someone spoke over the SyntH: what was queued is dropped."""
+        state = self._state_of(call_id, None)
+        if state is None:
+            return
+        state["buffer"].clear()
+        state["resample"] = None
 
     async def on_core_ended(
         self, interface_id: str, call_id: str, user_id: str | None
