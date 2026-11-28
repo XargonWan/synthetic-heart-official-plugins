@@ -1,0 +1,46 @@
+schema = 1
+
+[extension]
+id = "official/discord"
+name = "Discord Bot"
+version = "0.1.0"
+description = "Chat with SyntH on Discord: servers, channels, threads and direct messages, with files, replies, reactions and the synth avatar. Voice channels and calls are not in this version."
+author = "XargonWan"
+experimental = true
+
+[compat]
+core_api = ">=0.1,<1"
+
+[entry]
+module = "ext_main"
+function = "main"
+
+[[provides.interfaces]]
+id = "discord_bot"
+# discord_bot/<guild>/<channel> in a server channel, discord_bot/<guild>/<thread>/<thread> in a
+# thread (a thread is a channel of its own; its id is repeated), discord_bot/<user> in a DM.
+paths = [
+  "discord_bot/{guild}/{channel}",
+  "discord_bot/{guild}/{channel}/{thread}",
+  "discord_bot/{user}",
+]
+
+[permissions]
+capabilities = ["log", "config", "stats", "interfaces.register", "interfaces.inbound", "avatar"]
+network = ["discord.com:443", "*.discord.gg:443", "*.discordapp.com:443", "*.discordapp.net:443"]
+
+[python]
+requirements = ["discord.py>=2.7"]
+
+[config.DISCORD_BOT_TOKEN]
+type = "string"
+label = "Bot token"
+description = "The bot token from the Discord Developer Portal (Bot tab)."
+sensitive = true
+required = true
+
+[config.DISCORD_BOT_USE_SYNTH_AVATAR]
+type = "bool"
+label = "Use the synth avatar"
+description = "Set the synth avatar as the bot account's picture and keep it updated."
+default = true

@@ -20,6 +20,7 @@ and what a fresh installation installs its defaults from.
 | `official/auris_vosk` | Vosk local speech recognition (offline, CPU; the model of your language is fetched on first use) | yes |
 | `official/skin_miku` | Hatsune Miku skin (VRM by rurune; files only, shown in the Skins tab; see its `readme.txt` for the model's terms) | no |
 | `official/skin_riko` | Riko skin (VRM by Little Forest; files only, shown in the Skins tab) | no |
+| `official/discord` | Discord bot interface: servers, channels, threads, DMs, files, replies, reactions (voice channels and calls come later) | no |
 | `official/matrix` | Matrix interface (rooms, threads, replies, files) | no |
 | `official/radio_host` | AzuraCast Radio DJ: the synth speaks between songs on your station (needs ffmpeg) | no |
 
