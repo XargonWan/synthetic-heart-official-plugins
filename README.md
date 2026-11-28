@@ -102,4 +102,81 @@ Locally: `SYNTH_CORE=~/gits/Synthetic_Heart scripts/build_release.sh` writes `di
 
 ## Writing an extension
 
-See [AGENTS.md](AGENTS.md): the rules an extension (and an agent writing one) must keep.
+The rules an extension (and an agent writing one) must keep are in [AGENTS.md](AGENTS.md).
+
+### Start from the template
+
+The `template` branch of this repository is a complete, empty repository for **your own**
+extensions: a commented sample extension (`extensions/hello/`), tests, scripts to test and
+install locally, a publishing workflow and its own README with the full instructions. It has
+no shared history with this branch, so clone it as the `main` of a new repository:
+
+```bash
+git clone --branch template --single-branch \
+    https://github.com/XargonWan/synthetic-heart-official-plugins.git my-synth-extensions
+cd my-synth-extensions
+rm -rf .git && git init -b main && git add . && git commit -m "chore: start from the SyntH extension template"
+git remote add origin git@github.com:YOU/my-synth-extensions.git && git push -u origin main
+```
+
+To contribute to **this** repository instead, branch from `develop` and add your folder to
+`extensions/` (and to `EXTENSIONS` in `scripts/build_release.sh`).
+
+### Ask a coding agent to write one
+
+Open your agent in the repository (the template's or this one) and give it a prompt like
+this, filling in the paragraph about what the extension does:
+
+> Read `AGENTS.md` and the SyntH platform documentation in `<SyntH checkout>/docs/plugin_platform/`
+> (`extension_developer_guide.rst`, `extension_runtime.rst`) and the SDK in
+> `<SyntH checkout>/synth_sdk/runtime.py`. Then create a new SyntH extension
+> `yourname/<name>` in `extensions/<name>/`, starting from `extensions/hello/` (or, here,
+> the official extension closest to it).
+>
+> **What it should do:** <what service or device it connects to, what a person sees in SyntH,
+> which settings it needs (and which are secret), which messages or events it sends or receives>.
+>
+> **Rules:** follow `AGENTS.md` to the letter. Never import `core`, `plugins`, `interface` or
+> `engines`; use only `synth_sdk` and the libraries you bundle in `[python] requirements`.
+> Declare only the capabilities you really use. If the API cannot do what is needed, stop and
+> tell me which API is missing instead of working around it.
+>
+> **Deliver:** the manifest (id, version `0.1.0`, `experimental = true`, `[config.*]` for each
+> setting, `sensitive = true` for secrets), `ext_main.py`, the pure parts in `convert.py`, a
+> `guide.md` for the person installing it, an `icon.svg`, and tests in `ext_tests/`: a real
+> extension process behind the real gateway and a **fake of the outside service**. Run the
+> tests until they are green, prove at least one test can fail by breaking the code, and build
+> the package. Report what you could not verify.
+
+### Test it locally, without publishing
+
+You need a SyntH checkout (`SYNTH_CORE`, default `../Synthetic_Heart`, after `uv sync` in it).
+
+1. **Tests.** They run a real extension process behind the Core's real gateway:
+
+   ```bash
+   cd $SYNTH_CORE && DB_HOST=127.0.0.1 DB_PORT=1 uv run pytest -c <this repo>/pytest.ini \
+       --rootdir <this repo> <this repo>/ext_tests -k myextension
+   ```
+
+2. **A local repository.** `scripts/build_release.sh` writes `dist/` (one zip per extension and
+   the catalog; unsigned unless you have a publisher key). A directory is a repository:
+
+   ```bash
+   SYNTH_CORE=~/gits/Synthetic_Heart scripts/build_release.sh
+   cd $SYNTH_CORE
+   SYNTH_EXT_ROOT=/tmp/try uv run python -m core.extensions.cli repo add mine <this repo>/dist --kind local --unsigned --trusted
+   SYNTH_EXT_ROOT=/tmp/try uv run python -m core.extensions.cli install yourname/myextension --grant
+   ```
+
+   `SYNTH_EXT_ROOT` is a throwaway runtime root, so a running SyntH is untouched.
+3. **In a running SyntH.** Add the same folder in **Plugins > Repositories** (path as location,
+   public key empty, **Trusted** ticked). In Docker the path must exist in the container: mount
+   `dist/` with a `docker-compose.override.yml` (`volumes: - /abs/path/dist:/local-repo:ro` on
+   the `synth` service) and use `/local-repo`. Then **Catalog > Install**, grant what the
+   manifest declares, and read its log lines in **Logs**.
+
+   Edit loop: change the code, **bump `version`** (an installed version is never replaced by
+   the same number), rebuild, **Update**; **Roll back** returns to the previous version.
+
+The template's README walks through all of this, including publishing your own signed catalog.
