@@ -24,6 +24,9 @@ paths = [
   "discord_bot/{guild}/{channel}/{thread}",
   "discord_bot/{user}",
 ]
+# What the Core may assume about this platform.
+voice_input_tts_only = true       # speech only for spoken messages
+speech_as_media = true            # a spoken reply is sent as an audio attachment
 actions = ["join_voice_discord", "leave_voice_discord"]
 
 [permissions]
