@@ -19,7 +19,7 @@ import pytest
 
 from core.extensions.manifest import load_manifest
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "auris_vosk"
+SOURCE = Path(__file__).resolve().parent.parent
 
 
 def _load() -> tuple[Any, Any]:

@@ -6,8 +6,7 @@ from pathlib import Path
 
 from core.extensions.manifest import load_manifest
 
-ROOT = Path(__file__).resolve().parent.parent
-SRC = ROOT / "extensions" / "synth_dashboard"
+SRC = Path(__file__).resolve().parent.parent
 
 
 def test_manifest_puts_the_dashboard_in_the_more_menu() -> None:

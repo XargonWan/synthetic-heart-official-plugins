@@ -21,11 +21,11 @@ from core.extensions.memory_ports import MemoryConfig, memory_ports
 from core.extensions.sandbox import RuntimeLayout, SandboxPolicy
 from core.extensions.supervisor import RestartPolicy, Supervisor
 from tests.support.waiting import wait_until
-from ext_tests.test_extension_openai_api import free_port  # noqa: F401  (helper reuse)
+from ext_tests.support.net import free_port  # noqa: F401
 from tests.test_extensions_endpoints import FakePort
 from tests.test_extensions_runtime import Harness
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "zen"
+SOURCE = Path(__file__).resolve().parent.parent
 EXT_ID = "official/zen"
 
 

@@ -45,12 +45,12 @@ from core.extensions.sandbox import RuntimeLayout, SandboxPolicy
 from core.extensions.supervisor import RestartPolicy, Supervisor
 from core.extensions.turns import register_turn_api
 from core.extensions.voice import register_voice_api
-from ext_tests.support.fake_azuracast import FakeAzuraCast
+from fake_azuracast import FakeAzuraCast
 from tests.support.waiting import wait_until
 from tests.test_extensions_runtime import Harness
 from tests.test_extensions_turns_voice_recon import FakeReconHost, FakeTurns
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "radio_host"
+SOURCE = Path(__file__).resolve().parent.parent
 EXT_ID = "official/radio_host"
 FILES = (
     "ext_main.py",

@@ -19,7 +19,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "radio_host"
+SOURCE = Path(__file__).resolve().parent.parent
 _NAMES = (
     "radiolog",
     "azuracast_client",

@@ -10,7 +10,7 @@ from types import SimpleNamespace
 
 import pytest
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "telegram_bot"
+SOURCE = Path(__file__).resolve().parent.parent
 _spec = importlib.util.spec_from_file_location("tg_convert", SOURCE / "convert.py")
 assert _spec and _spec.loader
 convert = importlib.util.module_from_spec(_spec)

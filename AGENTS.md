@@ -54,7 +54,10 @@ interface with a web server), `official/zen` (registers an endpoint) and
 ## Tests
 
 Test against a real process and a **fake of the outside service** (a fake chat server, a
-fake client library), driving the extension through the gateway; `ext_tests/` shows how.
+fake client library), driving the extension through the gateway. The tests live **inside the
+extension**, in `extensions/<name>/tests/` (with the fakes only it uses), so the extension is
+self-contained; they are not shipped in the package. `ext_tests/` holds only checks that span
+several extensions (authorship, skins, the protocols) and helpers they share. `extensions/gemini_live/tests/` shows how.
 They run against a SyntH checkout (`SYNTH_CORE`), whose gateway and helpers they use. Check a test can fail: break the code and watch it go
 red.
 

@@ -40,7 +40,7 @@ from core.extensions.memory_ports import (
 )
 from core.extensions.sandbox import RuntimeLayout, SandboxPolicy
 from core.extensions.supervisor import RestartPolicy, Supervisor
-from ext_tests.support.fake_telegram import TOKEN, FakeTelegram, private_message
+from fake_telegram import TOKEN, FakeTelegram, private_message
 from tests.test_extensions_runtime import Harness
 
 PNG = base64.b64decode(
@@ -104,7 +104,7 @@ async def rig(tmp_path: Path) -> AsyncIterator[Rig]:
         await gateway.close_all()
 
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "telegram_bot"
+SOURCE = Path(__file__).resolve().parent.parent
 EXT_ID = "official/telegram_bot"
 
 

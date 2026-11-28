@@ -13,7 +13,7 @@ import pytest
 from core.extensions.manifest import load_manifest
 from synth_sdk.paths import match_path
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "matrix"
+SOURCE = Path(__file__).resolve().parent.parent
 
 
 def _load() -> tuple[Any, Any]:

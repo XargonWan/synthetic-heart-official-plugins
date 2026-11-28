@@ -93,7 +93,7 @@ jobs:
         run: |
           cd "$SYNTH_CORE"
           uv sync --frozen
-          uv run pytest -q -c "$GITHUB_WORKSPACE/pytest.ini" --rootdir "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/ext_tests"
+          uv run pytest -q -c "$GITHUB_WORKSPACE/pytest.ini" --rootdir "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/ext_tests" "$GITHUB_WORKSPACE/extensions"
 
       - name: Build the packages and the catalog
         env:

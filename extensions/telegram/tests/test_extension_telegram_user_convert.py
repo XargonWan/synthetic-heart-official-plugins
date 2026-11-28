@@ -11,7 +11,7 @@ from types import SimpleNamespace
 
 import pytest
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "telegram"
+SOURCE = Path(__file__).resolve().parent.parent
 _spec = importlib.util.spec_from_file_location("tgu_convert", SOURCE / "convert.py")
 assert _spec and _spec.loader
 convert = importlib.util.module_from_spec(_spec)

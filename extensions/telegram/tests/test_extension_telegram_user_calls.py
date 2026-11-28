@@ -12,7 +12,7 @@ from typing import Any
 
 import pytest
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "telegram"
+SOURCE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SOURCE))
 _spec = importlib.util.spec_from_file_location("tgu_calls", SOURCE / "calls.py")
 assert _spec and _spec.loader

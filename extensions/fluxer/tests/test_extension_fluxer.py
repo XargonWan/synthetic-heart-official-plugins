@@ -39,11 +39,11 @@ from core.extensions.memory_ports import (
 )
 from core.extensions.sandbox import RuntimeLayout, SandboxPolicy
 from core.extensions.supervisor import RestartPolicy, Supervisor
-from ext_tests.support.fake_fluxer import TOKEN, FakeFluxer, message
+from fake_fluxer import TOKEN, FakeFluxer, message
 from tests.support.waiting import wait_until
 from tests.test_extensions_runtime import Harness
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "fluxer"
+SOURCE = Path(__file__).resolve().parent.parent
 EXT_ID = "official/fluxer"
 PNG = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="

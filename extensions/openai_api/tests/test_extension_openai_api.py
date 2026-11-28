@@ -9,7 +9,6 @@ from __future__ import annotations
 import asyncio
 import json
 import shutil
-import socket
 import subprocess
 from collections.abc import AsyncIterator
 from pathlib import Path
@@ -20,6 +19,7 @@ import aiohttp
 import pytest
 import pytest_asyncio
 
+from ext_tests.support.net import free_port
 from core.extensions.api import register_core_api
 from core.extensions.gateway import Gateway
 from core.extensions.grants import MemoryGrantStore
@@ -42,7 +42,7 @@ from core.extensions.supervisor import RestartPolicy, Supervisor
 from tests.support.waiting import wait_until
 from tests.test_extensions_runtime import Harness
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "openai_api"
+SOURCE = Path(__file__).resolve().parent.parent
 EXT_ID = "official/openai_api"
 
 
@@ -68,12 +68,6 @@ def aiohttp_lib(tmp_path_factory: pytest.TempPathFactory) -> Path:
     if done.returncode != 0:
         pytest.skip(f"cannot build lib/ offline: {done.stderr.strip()[-200:]}")
     return target
-
-
-def free_port() -> int:
-    with socket.socket() as sock:
-        sock.bind(("127.0.0.1", 0))
-        return int(sock.getsockname()[1])
 
 
 @pytest_asyncio.fixture

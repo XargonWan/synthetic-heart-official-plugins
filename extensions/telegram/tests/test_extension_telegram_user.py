@@ -1,7 +1,7 @@
 """The Telegram user-account extension, end to end against a fake Telethon.
 
 The extension runs as a real sandboxed process; the Core side is the real gateway,
-interface API, panel API, call API and media bridge. ``ext_tests/support/fake_telethon.py``
+interface API, panel API, call API and media bridge. ``tests/fake_telethon.py``
 puts a fake ``telethon`` into the extension's ``lib/`` and is driven through files.
 """
 
@@ -44,11 +44,11 @@ from core.extensions.memory_ports import (
 from core.extensions.panels import PanelStore, register_panel_api, run_action
 from core.extensions.sandbox import RuntimeLayout, SandboxPolicy
 from core.extensions.supervisor import RestartPolicy, Supervisor
-from ext_tests.support import fake_telethon
+import fake_telethon
 from tests.test_extensions_calls import FakePipeline, FakeVideo
 from tests.test_extensions_runtime import Harness
 
-SOURCE = Path(__file__).resolve().parent.parent / "extensions" / "telegram"
+SOURCE = Path(__file__).resolve().parent.parent
 EXT_ID = "official/telegram"
 PNG = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
@@ -976,8 +976,8 @@ def test_the_userbot_asks_for_voice_notes_in_ogg_opus() -> None:
     """Speech that reaches a chat instead of a call must be a voice note Telegram accepts."""
     from core.extensions.manifest import load_manifest
 
-    from ext_tests import ROOT
-
-    manifest = load_manifest(ROOT / "extensions" / "telegram" / "synth-extension.toml")
+    manifest = load_manifest(
+        Path(__file__).resolve().parent.parent / "synth-extension.toml"
+    )
     (interface,) = manifest.provides.interfaces
     assert interface.voice_format == "ogg_opus"
