@@ -1,0 +1,9 @@
+/dist/
+__pycache__/
+.pytest_cache/
+# The libraries the packer builds into each extension
+/extensions/*/lib/
+# Your private publisher key must never be committed
+*.key
+!public.key
+/.local-runtime/

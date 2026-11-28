@@ -1,0 +1,38 @@
+schema = 1
+
+[extension]
+# publisher/name: lowercase letters, digits, "-" and "_". The publisher is you (or your
+# organisation); it is also what a person sees in the catalog.
+id = "yourname/hello"
+name = "Hello"
+version = "0.1.0"
+description = "A tiny example: it greets in the log, counts its own starts and publishes a statistic."
+author = "Your Name"
+# Keep this while the extension is unfinished: the store shows a disclaimer.
+experimental = true
+
+[compat]
+# The Core API versions this extension was written for.
+core_api = ">=0.1,<1"
+
+[entry]
+# ext_main.py, function main(ctx). It runs until ctx.stopping is set.
+module = "ext_main"
+function = "main"
+
+[permissions]
+# Ask for the least. The person installing it has to grant every one of these, and a call
+# whose capability is not declared here and granted is refused by the Core.
+capabilities = ["log", "config", "storage", "stats"]
+
+# Libraries the Core does not provide go here; they are built into lib/ when the package is
+# packed, so installing needs no network. Nothing is needed for this example.
+# [python]
+# requirements = ["aiohttp>=3.9"]
+
+# Settings shown in the WebUI. Read them with `await ctx.config.get("HELLO_GREETING")`.
+[config.HELLO_GREETING]
+type = "string"
+label = "Greeting"
+description = "What the extension says in the log when it starts."
+default = "Hello from my first extension"
