@@ -153,7 +153,7 @@ class Bridge:
                 attachments.append(
                     {
                         "path": str(saved),
-                        "filename": saved.name,
+                        "filename": convert.sticker_filename(sticker.id, sticker.name),
                         "mime_type": "image/png",
                     }
                 )
