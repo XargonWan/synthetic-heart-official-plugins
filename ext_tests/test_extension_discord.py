@@ -31,7 +31,7 @@ def _load() -> Any:
         return importlib.import_module("ext_main")
     finally:
         sys.path.remove(str(SOURCE))
-        for name in ("convert", "ext_main"):
+        for name in ("convert", "ext_main", "calls", "voice"):
             sys.modules.pop(name, None)
 
 
@@ -103,6 +103,7 @@ class Client:
         self.channels: dict[int, Channel] = {}
         self.users: dict[int, Any] = {}
         self.typing: list[int] = []
+        self.closed = False
         self.http = SimpleNamespace(send_typing=self._typing)
 
     async def _typing(self, channel_id: int) -> None:
@@ -123,6 +124,9 @@ class Client:
     def is_ready(self) -> bool:
         return True
 
+    async def close(self) -> None:
+        self.closed = True
+
 
 class Ctx:
     def __init__(self, tmp: Path, **config: Any) -> None:
@@ -138,6 +142,8 @@ class Ctx:
         self.interfaces = SimpleNamespace(
             inbound=self._inbound, register=self._register
         )
+        self.provided: list[str] = []
+        self.calls = SimpleNamespace(provider=self._provider)
 
     async def _get(self, key: str) -> Any:
         return self.config_values.get(key)
@@ -145,6 +151,9 @@ class Ctx:
     async def _inbound(self, interface_id: str, path: str, **kw: Any) -> dict[str, Any]:
         self.inbound.append({"interface_id": interface_id, "path": path, **kw})
         return {"queued": True}
+
+    async def _provider(self, interface_id: str) -> None:
+        self.provided.append(interface_id)
 
     async def _register(self, interface_id: str, **kw: Any) -> dict[str, Any]:
         self.registered.append({"interface_id": interface_id, **kw})
@@ -466,9 +475,23 @@ class TestLifecycle:
         await rig.bridge.on_ready()  # a reconnect
         [reg] = rig.ctx.registered
         assert reg["interface_id"] == "discord_bot" and reg["bot_id"] == "42"
-        assert {"send_file", "activity", "reaction", "avatar"} <= set(
+        assert {"send_file", "activity", "reaction", "avatar", "call"} <= set(
             reg["capabilities"]
         )
+        assert set(reg["actions"]) == {"join_voice_discord", "leave_voice_discord"}
+        assert rig.ctx.provided == ["discord_bot"]  # it hosts calls
+
+    @pytest.mark.asyncio
+    async def test_when_the_core_refuses_the_interface_it_disconnects(
+        self, rig: SimpleNamespace
+    ) -> None:
+        async def refuse(interface_id: str, **kw: Any) -> None:
+            raise RuntimeError("interface id 'discord_bot' is already registered")
+
+        rig.ctx.interfaces.register = refuse
+        await rig.bridge.on_ready()
+        assert rig.client.closed is True and rig.bridge.registered is False
+        assert "already registered" in str(rig.bridge.refusal)
 
     @pytest.mark.parametrize(
         ("problem", "words"),
@@ -503,8 +526,11 @@ def test_the_extension_loads_in_its_sandbox(tmp_path: Path) -> None:
     if uv is None:
         pytest.skip("uv is needed to build the extension's lib/")
     lib = tmp_path / "lib"
+    from core.extensions.manifest import load_manifest
+
+    requirements = load_manifest(SOURCE / "synth-extension.toml").python_requirements
     done = subprocess.run(
-        [uv, "pip", "install", "--offline", "--target", str(lib), "discord.py>=2.7"],
+        [uv, "pip", "install", "--offline", "--target", str(lib), *requirements],
         capture_output=True,
         text=True,
     )
@@ -513,7 +539,8 @@ def test_the_extension_loads_in_its_sandbox(tmp_path: Path) -> None:
     core = Path(__file__).resolve().parents[2] / "Synthetic_Heart"
     code = (
         "import sys; sys.path[:0] = [sys.argv[1], sys.argv[2], sys.argv[3]]; "
-        "import convert, ext_main, discord; print(discord.__version__)"
+        "import convert, voice, calls, ext_main, discord; "
+        "print(discord.__version__, voice.HAS_VOICE_RECV, voice.apply_patches())"
     )
     run = subprocess.run(
         [sys.executable, "-S", "-I", "-c", code, str(lib), str(SOURCE), str(core)],
@@ -521,4 +548,5 @@ def test_the_extension_loads_in_its_sandbox(tmp_path: Path) -> None:
         text=True,
     )
     assert run.returncode == 0, run.stderr[-400:]
-    assert run.stdout.strip()[0].isdigit()
+    version, has_recv, patched = run.stdout.split()
+    assert version[0].isdigit() and has_recv == "True" and patched == "True"

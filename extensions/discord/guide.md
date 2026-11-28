@@ -11,4 +11,6 @@
 Mention the bot, reply to it, or write to it directly to talk to it. Set your Discord user id
 as trainer in the settings to give yourself the trainer's powers.
 
-Voice channels and calls are not in this version.
+**Voice.** Ask it to join while you are in a voice channel (the model uses
+`join_voice_discord`); it listens, answers aloud and leaves with `/leave` or when everybody
+has left. By default only the trainer can ask; change that in the settings.

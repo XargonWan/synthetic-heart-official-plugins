@@ -4,7 +4,7 @@ schema = 1
 id = "official/discord"
 name = "Discord Bot"
 version = "0.1.0"
-description = "Chat with SyntH on Discord: servers, channels, threads and direct messages, with files, replies, reactions and the synth avatar. Voice channels and calls are not in this version."
+description = "Chat with SyntH on Discord: servers, channels, threads and direct messages, with files, replies, reactions and the synth avatar, and talk to it in a voice channel."
 author = "XargonWan"
 experimental = true
 
@@ -24,13 +24,14 @@ paths = [
   "discord_bot/{guild}/{channel}/{thread}",
   "discord_bot/{user}",
 ]
+actions = ["join_voice_discord", "leave_voice_discord"]
 
 [permissions]
-capabilities = ["log", "config", "stats", "interfaces.register", "interfaces.inbound", "avatar"]
+capabilities = ["log", "config", "stats", "interfaces.register", "interfaces.inbound", "avatar", "calls"]
 network = ["discord.com:443", "*.discord.gg:443", "*.discordapp.com:443", "*.discordapp.net:443"]
 
 [python]
-requirements = ["discord.py>=2.7"]
+requirements = ["discord.py[voice]>=2.7", "discord-ext-voice-recv>=0.5.2a179", "davey>=0.1.4"]
 
 [config.DISCORD_BOT_TOKEN]
 type = "string"
@@ -43,4 +44,10 @@ required = true
 type = "bool"
 label = "Use the synth avatar"
 description = "Set the synth avatar as the bot account's picture and keep it updated."
+default = true
+
+[config.DISCORD_VOICE_TRAINER_ONLY]
+type = "bool"
+label = "Only the trainer can ask it to join voice"
+description = "When on, it joins a voice channel only for the person set as trainer for Discord."
 default = true

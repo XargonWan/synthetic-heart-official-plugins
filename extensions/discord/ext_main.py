@@ -7,9 +7,9 @@ Flow: a Discord message -> :meth:`Bridge.on_message` -> ``ctx.interfaces.inbound
 Core calls back into :meth:`Bridge.send` (and the activity, reaction, name and avatar
 handlers) to act on Discord. The Core owns history, commands, attention and the queue.
 
-What this extension does not carry over from the in-tree interface it replaces: voice
-channels, calls and the Live voice session (they need the calls and duplex-audio APIs and
-come in a later step).
+Voice channels are in ``calls.py`` (a call is the bot sitting in a voice channel; the Core
+runs the conversation). What this extension does not carry over from the in-tree interface
+it replaces is the Gemini Live voice session: it needs a duplex-audio API.
 """
 
 from __future__ import annotations
@@ -19,10 +19,45 @@ import contextlib
 from pathlib import Path
 from typing import Any
 
+import calls
 import convert
 import discord
 
 from synth_sdk.runtime import Context
+
+#: The interface's own actions the model may use (see ``Bridge.on_action``).
+ACTIONS: dict[str, dict[str, Any]] = {
+    "join_voice_discord": {
+        "description": "Join a Discord voice channel and talk there as a call.",
+        "fields": {
+            "interface_path": {
+                "type": "string",
+                "description": "Use the exact interface_path of the message you are answering.",
+                "example": "discord_bot/1234567890/9876543210",
+            },
+        },
+        "notes": [
+            "Do not pass a channel id: the voice channel the sender is in is found by itself."
+        ],
+    },
+    "leave_voice_discord": {
+        "description": "Leave the Discord voice channel (and end the call) in a server.",
+        "fields": {
+            "guild_id": {
+                "type": "string",
+                "description": "The server's id.",
+                "example": "1234567890",
+                "optional": True,
+            },
+            "interface_path": {
+                "type": "string",
+                "description": "Or the interface_path of a message in that server.",
+                "example": "discord_bot/1234567890/9876543210",
+                "optional": True,
+            },
+        },
+    },
+}
 
 
 class Bridge:
@@ -32,6 +67,13 @@ class Bridge:
         self.ctx = ctx
         self.client = client
         self.registered = False
+        #: Why the bridge gave up on its own (the Core refused it), for the log.
+        self.refusal: str | None = None
+        self.voice = calls.VoiceHost(ctx, client)
+        #: Per conversation: who spoke last and in which voice channel they were. A
+        #: ``join_voice_discord`` action does not say who asked, so this is how the channel
+        #: to join is found.
+        self.last_speaker: dict[str, tuple[str, str | None]] = {}
 
     # ------------------------------------------------------------- inbound
 
@@ -67,6 +109,15 @@ class Bridge:
             thread_id,
             message.author.id,
         )
+        voice_state = getattr(message.author, "voice", None)
+        voice_channel = getattr(voice_state, "channel", None)
+        self.last_speaker[path] = (
+            str(message.author.id),
+            None if voice_channel is None else str(voice_channel.id),
+        )
+        if content.split(maxsplit=1)[:1] == ["/leave"]:
+            await self._leave_command(message, content)
+            return
         replied = await self._replied_message(message)
         replied_to_bot = replied is not None and replied.author.id == me.id
         files: list[Path] = []
@@ -282,6 +333,118 @@ class Bridge:
             return False
         return True
 
+    # ------------------------------------------------------------- voice
+
+    async def _trainer_ok(self, sender_id: str | None) -> bool:
+        """Joining a voice channel is the trainer's (unless the operator opened it)."""
+        if not await self.ctx.config.get("DISCORD_VOICE_TRAINER_ONLY"):
+            return True
+        trainer = await self.ctx.interfaces.trainer(convert.INTERFACE_ID)
+        return trainer is not None and sender_id == trainer
+
+    async def on_action(
+        self,
+        interface_id: str,
+        name: str,
+        payload: dict[str, Any],
+        context: dict[str, Any],
+    ) -> dict[str, str]:
+        path = payload.get("interface_path") or context.get("interface_path")
+        if name == "join_voice_discord":
+            sender, voice_channel = self.last_speaker.get(str(path), (None, None))
+            if not await self._trainer_ok(sender):
+                return {
+                    "status": "failed",
+                    "message": "Only the trainer can ask me to join voice",
+                }
+            channel_id = payload.get("channel_id")
+            if (
+                channel_id is not None
+                and str(channel_id) in (convert.levels_of(path) or [])[:1]
+            ):
+                channel_id = None  # the model gave the server's id: look the channel up
+            if (
+                channel_id is None
+                or await self.voice._voice_channel(channel_id) is None
+            ):  # noqa: SLF001
+                channel_id = voice_channel
+            if channel_id is None and sender is not None:
+                found = self.voice.voice_channel_of(sender)
+                channel_id = None if found is None else str(found.id)
+            if channel_id is None:
+                return {
+                    "status": "failed",
+                    "message": "The sender is not in a voice channel",
+                }
+            return await self.voice.start_call(channel_id, sender)
+        if name == "leave_voice_discord":
+            guild_id = payload.get("guild_id") or (convert.levels_of(path) or [None])[0]
+            if guild_id is None:
+                return {
+                    "status": "failed",
+                    "message": "Which server? (guild_id or interface_path)",
+                }
+            return await self.voice.leave(guild_id)
+        return {"status": "failed", "message": f"unknown action {name}"}
+
+    async def _leave_command(self, message: discord.Message, content: str) -> None:
+        """``/leave [server id or channel name]``: Discord's own, needing the server."""
+        channel = message.channel
+        if message.guild is None:
+            await channel.send("❌ Not in a server.")
+            return
+        links = [
+            (vc.guild, getattr(vc.channel, "name", None))
+            for vc in getattr(self.client, "voice_clients", [])
+            if getattr(vc, "guild", None) is not None
+        ]
+        args = content.split()[1:]
+        if args:
+            target = args[0]
+            match = next(
+                (
+                    g
+                    for g, name in links
+                    if str(g.id) == target or (name and name.lower() == target.lower())
+                ),
+                None,
+            )
+            if match is None:
+                await channel.send(
+                    f"❌ I'm not in a voice channel matching '{target}'."
+                )
+                return
+            done = await self.voice.leave(match.id)
+            ok = done["status"] == "success"
+            await channel.send(
+                f"👋 Left voice channel in {match.name}."
+                if ok
+                else f"❌ {done['message']}"
+            )
+            return
+        if not links:
+            await channel.send("❌ I'm not in any voice channels.")
+            return
+        if len(links) == 1:
+            done = await self.voice.leave(links[0][0].id)
+            await channel.send(
+                "👋 Left voice channel."
+                if done["status"] == "success"
+                else f"❌ {done['message']}"
+            )
+            return
+        lines = ["I'm connected to several voice channels:"] + [
+            f"• {g.name} (id {g.id}) in '{name or 'unknown'}'" for g, name in links
+        ]
+        lines.append("Use `/leave <server id or channel name>` to leave one of them.")
+        await channel.send("\n".join(lines))
+
+    async def on_voice_state_update(self, member: Any, before: Any, after: Any) -> None:
+        try:
+            await self.voice.on_voice_state_update(member, before, after)
+        except Exception as exc:  # noqa: BLE001 - never let a voice event end the client
+            self.ctx.log.warning(f"voice state update: {type(exc).__name__}: {exc}")
+
     # ------------------------------------------------------------ lifecycle
 
     async def on_ready(self) -> None:
@@ -289,6 +452,17 @@ class Bridge:
             return  # a reconnect: already known to the Core
         self.registered = True
         user = self.client.user
+        try:
+            await self._register(user)
+        except Exception as exc:  # noqa: BLE001 - e.g. another component has the id
+            self.registered = False
+            self.refusal = f"the Core refused the interface: {exc}"
+            self.ctx.log.error(f"{self.refusal}; disconnecting from Discord")
+            await self.client.close()  # never sit online reading what nobody can answer
+            return
+        self.ctx.log.info(f"connected to Discord as {user}")
+
+    async def _register(self, user: Any) -> None:
         await self.ctx.interfaces.register(
             convert.INTERFACE_ID,
             display_name="Discord Bot",
@@ -303,9 +477,17 @@ class Bridge:
                 "To reply where a message came from, reuse its interface_path."
             ),
             resolve_names=True,
-            capabilities=["send_file", "send_audio", "activity", "reaction", "avatar"],
+            capabilities=[
+                "send_file",
+                "send_audio",
+                "activity",
+                "reaction",
+                "avatar",
+                "call",
+            ],
+            actions=ACTIONS,
         )
-        self.ctx.log.info(f"connected to Discord as {user}")
+        await self.ctx.calls.provider(convert.INTERFACE_ID)
 
 
 def build_client() -> discord.Client:
@@ -333,6 +515,9 @@ async def main(ctx: Context) -> None:
     bridge = Bridge(ctx, client)
     client.event(bridge.on_message)
     client.event(bridge.on_ready)
+    client.event(bridge.on_voice_state_update)
+    bridge.voice.start()
+    ctx.interfaces.on_action(bridge.on_action)
     ctx.interfaces.on_send_message(bridge.send)
     ctx.interfaces.on_activity(bridge.activity)
     ctx.interfaces.on_reaction(bridge.react)
@@ -345,13 +530,15 @@ async def main(ctx: Context) -> None:
             {run, stopping}, return_when=asyncio.FIRST_COMPLETED
         )
         if run in done:
-            reason = refusal_reason(run.exception())
+            reason = bridge.refusal or refusal_reason(run.exception())
             ctx.log.error(f"{reason}: Discord is idle until it is fixed")
             if bridge.registered:
                 await ctx.interfaces.set_state(convert.INTERFACE_ID, False, reason)
             await ctx.stopping.wait()
     finally:
         stopping.cancel()
+        with contextlib.suppress(Exception):
+            await bridge.voice.stop()
         with contextlib.suppress(Exception):
             await client.close()
         run.cancel()
