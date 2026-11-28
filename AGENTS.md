@@ -31,7 +31,6 @@ libraries it needs, built into `lib/`.
    `[[requires.extensions]]` with a version range, and talk to it through the gateway.
 6. **Bring your libraries.** Anything SyntH does not provide goes in `[python] requirements`
    and is bundled into `lib/` when the package is built. Do not assume the host has it.
-7. **No legacy.** No compatibility layers for old plugins; rewrite, and migrate data only.
 8. **No secrets in logs or storage you do not need.** Mark secret settings `sensitive = true`.
    Never write a token or a login code to the log.
 9. **No word lists.** Do not detect intent or language with keyword lists; return structured
