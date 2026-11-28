@@ -6,7 +6,6 @@ name = "Telegram Bot"
 version = "0.1.1"
 description = "Chat with SyntH through a Telegram bot (BotFather token)."
 author = "XargonWan"
-experimental = true
 
 [compat]
 core_api = ">=0.1,<1"

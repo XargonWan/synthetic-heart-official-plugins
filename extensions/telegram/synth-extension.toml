@@ -6,7 +6,6 @@ name = "Telegram (user account)"
 version = "0.1.1"
 description = "Chat and take voice calls through a Telegram user account (Telethon)."
 author = "XargonWan"
-experimental = true
 
 [compat]
 core_api = ">=0.1,<1"
