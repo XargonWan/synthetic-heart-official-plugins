@@ -124,6 +124,7 @@ class Bridge:
                 chat_type=convert.chat_kind(chat),
                 chat_title=convert.title_of(chat),
                 reply_to=reply,
+                forwarded_from=await self._forward_of(raw),
                 attachments=attachments or None,
                 is_voice_input=convert.is_spoken(raw) and not backlog,
                 timestamp=raw.date.isoformat() if raw.date else None,
@@ -135,6 +136,19 @@ class Bridge:
                 with contextlib.suppress(OSError):
                     file.unlink()
         return True
+
+    async def _forward_of(self, raw: Any) -> dict[str, Any] | None:
+        """Who first said a forwarded message (``None`` when it is not forwarded)."""
+        if getattr(raw, "fwd_from", None) is None:
+            return None
+        origin = None
+        forward = getattr(raw, "forward", None)
+        try:
+            if forward is not None:
+                origin = await forward.get_sender() or await forward.get_chat()
+        except Exception as exc:  # noqa: BLE001 - hidden or unreachable origin
+            self.ctx.log.debug(f"forward origin not fetched: {type(exc).__name__}")
+        return convert.forward_block(raw, origin)
 
     async def _reply_of(self, raw: Any, thread: int | None) -> dict[str, Any] | None:
         reply = getattr(raw, "reply_to", None)

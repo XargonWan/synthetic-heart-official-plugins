@@ -206,6 +206,20 @@ class TestMessages:
         ]
         assert convert.is_spoken(only_doc) is False
 
+    def test_forward_block(self) -> None:
+        when = datetime(2026, 11, 27, 10, 0, tzinfo=timezone.utc)
+        message = ns(fwd_from=ns(from_id=ns(user_id=9), from_name=None, date=when))
+        sara = User(id=9, first_name="Sara", last_name=None, username="s")
+        assert convert.forward_block(message, sara) == {
+            "sender_name": "Sara",
+            "sender_id": "9",
+            "date": when.isoformat(),
+        }
+        # An origin Telegram hides still carries the name in the header.
+        hidden = ns(fwd_from=ns(from_id=None, from_name="Silvia", date=None))
+        assert convert.forward_block(hidden, None) == {"sender_name": "Silvia"}
+        assert convert.forward_block(ns(fwd_from=None), None) is None
+
     def test_reply_block(self) -> None:
         sender = User(id=6, first_name="Carol", last_name=None, username="c")
         block = convert.reply_block(ns(raw_text="hi", id=80), sender)

@@ -82,6 +82,40 @@ class TestReplies:
         }
 
 
+class TestForwards:
+    def test_not_forwarded_is_none(self) -> None:
+        assert convert.forward_info(ns(forward_origin=None)) is None
+        assert convert.forward_info(ns()) is None
+
+    def test_a_known_user_origin(self) -> None:
+        when = SimpleNamespace(isoformat=lambda: "2026-11-27T10:00:00+00:00")
+        origin = ns(sender_user=ns(id=9, full_name="Sara"), date=when)
+        assert convert.forward_info(ns(forward_origin=origin)) == {
+            "sender_name": "Sara",
+            "sender_id": "9",
+            "date": "2026-11-27T10:00:00+00:00",
+        }
+
+    def test_a_hidden_user_keeps_only_the_name(self) -> None:
+        origin = ns(sender_user_name="Silvia", date=None)
+        assert convert.forward_info(ns(forward_origin=origin)) == {
+            "sender_name": "Silvia"
+        }
+
+    def test_a_channel_origin_and_the_legacy_fields(self) -> None:
+        origin = ns(chat=ns(id=-100, title="News"), date=None)
+        info = convert.forward_info(ns(forward_origin=origin))
+        assert info is not None and info["sender_name"] == "News"
+        legacy = ns(
+            forward_origin=None,
+            forward_from=ns(id=4, full_name="Gino"),
+            forward_from_chat=None,
+            forward_sender_name=None,
+            forward_date=None,
+        )
+        assert convert.forward_info(legacy) == {"sender_name": "Gino", "sender_id": "4"}
+
+
 class TestSplitting:
     def test_short_text_is_one_chunk(self) -> None:
         assert convert.split_text("hi") == ["hi"]

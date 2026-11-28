@@ -78,6 +78,43 @@ def reply_info(message: Any) -> dict[str, Any] | None:
     return info
 
 
+def forward_info(message: Any) -> dict[str, Any] | None:
+    """Who first said a forwarded message, or ``None`` when it is not forwarded.
+
+    Bot API 7+ gives ``forward_origin`` (a user, a hidden user, a chat or a channel);
+    older payloads give ``forward_from`` / ``forward_sender_name`` / ``forward_from_chat``.
+    """
+    origin = getattr(message, "forward_origin", None)
+    if origin is not None:
+        user = getattr(origin, "sender_user", None)
+        chat = getattr(origin, "sender_chat", None) or getattr(origin, "chat", None)
+        hidden = getattr(origin, "sender_user_name", None)
+        sent = getattr(origin, "date", None)
+    else:
+        user = getattr(message, "forward_from", None)
+        chat = getattr(message, "forward_from_chat", None)
+        hidden = getattr(message, "forward_sender_name", None)
+        sent = getattr(message, "forward_date", None)
+        if user is None and chat is None and not hidden and sent is None:
+            return None
+    entity = user if user is not None else chat
+    name = (
+        getattr(entity, "full_name", None)
+        or getattr(entity, "title", None)
+        or getattr(entity, "username", None)
+        or hidden
+        or ""
+    )
+    info: dict[str, Any] = {}
+    if name:
+        info["sender_name"] = str(name)
+    if entity is not None and getattr(entity, "id", None) is not None:
+        info["sender_id"] = str(entity.id)
+    if sent is not None:
+        info["date"] = sent.isoformat()
+    return info
+
+
 @dataclass
 class MediaRef:
     """A file attached to an incoming message, not downloaded yet."""
@@ -145,6 +182,8 @@ class Inbound:
     media: list[MediaRef] = field(default_factory=list)
     #: The message was spoken (voice note or video note).
     is_voice_input: bool = False
+    #: Who first said it, when the message is a forward.
+    forwarded_from: dict[str, Any] | None = None
 
     def kwargs(self) -> dict[str, Any]:
         return {
@@ -161,6 +200,7 @@ class Inbound:
             "chat_title": self.chat_title,
             "reply_to": self.reply_to,
             "is_voice_input": self.is_voice_input,
+            "forwarded_from": self.forwarded_from,
         }
 
 
@@ -199,6 +239,7 @@ def inbound_from_message(message: Any) -> Inbound | None:
         is_voice_input=bool(
             getattr(message, "voice", None) or getattr(message, "video_note", None)
         ),
+        forwarded_from=forward_info(message),
     )
 
 

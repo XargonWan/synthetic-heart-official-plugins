@@ -205,6 +205,31 @@ def reply_block(replied: Any, sender: Any) -> dict[str, Any] | None:
     return info
 
 
+def forward_block(tl_message: Any, origin: Any = None) -> dict[str, Any] | None:
+    """The ``forwarded_from`` description of a forwarded message, or ``None``.
+
+    ``origin`` is the entity that first said it when Telegram lets us resolve it
+    (a user or a channel); a hidden origin still carries a name in the header.
+    """
+    header = getattr(tl_message, "fwd_from", None)
+    if header is None:
+        return None
+    info: dict[str, Any] = {}
+    name = full_name(origin) or title_of(origin) if origin is not None else ""
+    name = name or getattr(header, "from_name", None) or ""
+    if name:
+        info["sender_name"] = str(name)
+    from_id = getattr(header, "from_id", None)
+    origin_id = getattr(origin, "id", None) or getattr(from_id, "user_id", None)
+    origin_id = origin_id or getattr(from_id, "channel_id", None)
+    if origin_id is not None:
+        info["sender_id"] = str(origin_id)
+    sent = getattr(header, "date", None)
+    if sent is not None:
+        info["date"] = sent.isoformat()
+    return info
+
+
 def media_name(doc: Any, default: str) -> str:
     for attr in getattr(doc, "attributes", None) or []:
         name = getattr(attr, "file_name", None)
