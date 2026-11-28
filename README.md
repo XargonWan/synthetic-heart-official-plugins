@@ -104,6 +104,13 @@ Locally: `SYNTH_CORE=~/gits/Synthetic_Heart scripts/build_release.sh` writes `di
 
 The rules an extension (and an agent writing one) must keep are in [AGENTS.md](AGENTS.md).
 
+### Screenshots
+
+An extension can ship a `screenshots/` folder in its own directory (`.png`, `.jpg`, `.webp` or
+`.gif`, at most 8, each at most 2 MB). The catalog shows them in file-name order (`01-main.png`,
+`02-settings.png`, ...), before the extension is installed. The release carries each one as an
+asset next to the package; the signed catalog lists them with their SHA-256.
+
 ### Start from the template
 
 The `template` branch of this repository is a complete, empty repository for **your own**
