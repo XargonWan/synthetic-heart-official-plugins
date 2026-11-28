@@ -20,7 +20,8 @@ and what a fresh installation installs its defaults from.
 | `official/auris_vosk` | Vosk local speech recognition (offline, CPU; the model of your language is fetched on first use) | yes |
 | `official/skin_miku` | Hatsune Miku skin (VRM by rurune; files only, shown in the Skins tab; see its `readme.txt` for the model's terms) | no |
 | `official/skin_riko` | Riko skin (VRM by Little Forest; files only, shown in the Skins tab) | no |
-| `official/discord` | Discord bot interface: servers, channels, threads, DMs, files, replies, reactions, voice channels and calls (Gemini Live not yet) | no |
+| `official/discord` | Discord bot interface: servers, channels, threads, DMs, files, replies, reactions, voice channels and calls, classic or held by a Live engine such as `gemini_live` | no |
+| `official/gemini_live` | Gemini Live engine: real-time voice conversations held by the model (needs a Gemini API key; untested against the real API) | no |
 | `official/matrix` | Matrix interface (rooms, threads, replies, files) | no |
 | `official/radio_host` | AzuraCast Radio DJ: the synth speaks between songs on your station (needs ffmpeg) | no |
 
@@ -80,8 +81,9 @@ builds, unsigned.
 1. It checks out the SyntH repository (`XargonWan/synthetic_heart`): the packer is
    `core/extensions`, the gateway the tests run against is there too, and so are the
    Stage client's sources (`frontend/`). The extensions' sources are `extensions/` here.
-2. It runs the extensions' tests (`ext_tests/`) in SyntH's environment:
-   `cd $SYNTH_CORE && uv run pytest -c <this repo>/pytest.ini --rootdir <this repo> <this repo>/ext_tests`.
+2. It runs the extensions' tests in SyntH's environment (each extension's own are in its
+   `tests/` folder; `ext_tests/` holds only what spans several extensions):
+   `cd $SYNTH_CORE && uv run pytest -c <this repo>/pytest.ini --rootdir <this repo> <this repo>`.
 3. `scripts/build_release.sh` builds the Stage client, packs every extension with its
    libraries and writes the signed catalog.
 4. `scripts/verify_release.py` refuses to go on unless the catalog verifies with this
@@ -151,7 +153,7 @@ this, filling in the paragraph about what the extension does:
 >
 > **Deliver:** the manifest (id, version `0.1.0`, `experimental = true`, `[config.*]` for each
 > setting, `sensitive = true` for secrets), `ext_main.py`, the pure parts in `convert.py`, a
-> `guide.md` for the person installing it, an `icon.svg`, and tests in `ext_tests/`: a real
+> `guide.md` for the person installing it, an `icon.svg`, and tests in its own `tests/` folder: a real
 > extension process behind the real gateway and a **fake of the outside service**. Run the
 > tests until they are green, prove at least one test can fail by breaking the code, and build
 > the package. Report what you could not verify.
@@ -164,7 +166,7 @@ You need a SyntH checkout (`SYNTH_CORE`, default `../Synthetic_Heart`, after `uv
 
    ```bash
    cd $SYNTH_CORE && DB_HOST=127.0.0.1 DB_PORT=1 uv run pytest -c <this repo>/pytest.ini \
-       --rootdir <this repo> <this repo>/ext_tests -k myextension
+       --rootdir <this repo> <this repo> -k myextension
    ```
 
 2. **A local repository.** `scripts/build_release.sh` writes `dist/` (one zip per extension and

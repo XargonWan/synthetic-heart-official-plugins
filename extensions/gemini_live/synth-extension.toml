@@ -1,0 +1,69 @@
+schema = 1
+
+[extension]
+id = "official/gemini_live"
+name = "Gemini Live"
+version = "0.1.0"
+description = "Real-time voice conversations with Gemini Live: the model hears the call and answers in its own voice, with the SyntH's tools."
+author = "XargonWan"
+
+[compat]
+core_api = ">=0.1,<1"
+
+[entry]
+module = "ext_main"
+function = "main"
+
+[provides]
+engines = ["live"]
+
+[permissions]
+# live.provider is what lets it offer the engine; the Core owns the conversation (persona,
+# tools, history), this extension only holds the connection to the model.
+capabilities = ["log", "config", "live.provider"]
+network = ["generativelanguage.googleapis.com:443", "*.googleapis.com:443"]
+
+[python]
+requirements = ["google-genai"]
+
+[config.GEMINI_API_KEY]
+type = "string"
+label = "Gemini API key"
+description = "A Google AI Studio API key (https://aistudio.google.com/apikey). Without it the engine refuses to open a session and the call stays on the classic path."
+sensitive = true
+
+[config.GEMINI_LIVE_AFFECTIVE_DIALOG]
+type = "bool"
+label = "Affective dialog"
+description = "The model adapts its tone to the caller's. Not supported by Gemini 3.1 Flash Live: turning it on uses the older 2.5 native-audio model."
+default = false
+
+[config.GEMINI_LIVE_PROACTIVE_AUDIO]
+type = "bool"
+label = "Proactive audio"
+description = "The model may stay silent when the audio is not meant for it. Not supported by Gemini 3.1 Flash Live: turning it on uses the older 2.5 native-audio model."
+default = false
+
+[config.GEMINI_LIVE_THINKING_LEVEL]
+type = "string"
+label = "Thinking level"
+description = "How much the model thinks before answering (minimal, low, medium, high). Minimal is the fastest. Gemini 3.1 only."
+default = "minimal"
+
+[config.GEMINI_LIVE_THINKING_BUDGET]
+type = "int"
+label = "Thinking budget (2.5 model)"
+description = "Tokens the older 2.5 model may spend thinking. 0 turns it off."
+default = 0
+
+[config.GEMINI_LIVE_VAD]
+type = "string"
+label = "Speech detection"
+description = "manual: this extension tells the model when the caller starts and stops speaking (for sources that send nothing while the caller is silent, such as a voice channel). server: the model detects speech itself (for sources that send continuous audio)."
+default = "manual"
+
+[config.GEMINI_LIVE_SILENCE_SECONDS]
+type = "float"
+label = "Silence that ends a turn (manual detection)"
+description = "Seconds without audio after which the caller is taken to have finished speaking."
+default = 1.5
