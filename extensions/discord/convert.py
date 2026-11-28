@@ -158,3 +158,23 @@ def audio_kind(content_type: str | None, filename: str | None) -> bool:
     return bool(filename) and str(filename).lower().endswith(
         (".ogg", ".oga", ".opus", ".mp3", ".wav", ".m4a", ".flac")
     )
+
+
+#: Sticker pictures larger than this are not downloaded.
+MAX_STICKER_BYTES = 2 * 1024 * 1024
+
+
+def sticker_note(name: str, kind: str, *, downloaded: bool = False) -> str:
+    """What to tell the model about a sticker it cannot be given as a picture."""
+    if kind == "png":  # a static sticker that could not be fetched
+        return f"[A sticker named '{name}' was sent, but it could not be downloaded.]"
+    return (
+        f"[A sticker named '{name}' was sent, but its format ({kind or 'unknown'}) "
+        "cannot be shown as a still image.]"
+    )
+
+
+def sticker_filename(sticker_id: Any, name: str) -> str:
+    """A safe file name for a downloaded sticker."""
+    plain = "".join(c if c.isalnum() or c in "-_" else "_" for c in name)[:40]
+    return f"sticker_{sticker_id}_{plain or 'sticker'}.png"

@@ -310,6 +310,57 @@ class TestInbound:
         assert not list(rig.tmp.glob("in-*"))  # nothing left behind
 
     @pytest.mark.asyncio
+    async def test_a_still_sticker_is_a_picture_and_the_others_are_a_note(
+        self, rig: SimpleNamespace, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        async def fetch(url: str) -> bytes:
+            return b"PNGDATA"
+
+        monkeypatch.setattr(rig.bridge, "_download", fetch)
+        seen: dict[str, bytes] = {}
+
+        async def inbound(interface_id: str, path: str, **kw: Any) -> dict[str, Any]:
+            for item in kw["attachments"] or []:
+                seen[item["filename"]] = Path(item["path"]).read_bytes()
+            rig.ctx.inbound.append(kw)
+            return {}
+
+        rig.ctx.interfaces.inbound = inbound
+        png = SimpleNamespace(
+            id=1, name="wave", url="http://x/1.png", format=SimpleNamespace(name="png")
+        )
+        lottie = SimpleNamespace(
+            id=2,
+            name="dance",
+            url="http://x/2.json",
+            format=SimpleNamespace(name="lottie"),
+        )
+        message = Message(109, ALICE, "look", Channel(900, None), None)
+        message.stickers = [png, lottie]
+        await rig.bridge.on_message(message)
+        [call] = rig.ctx.inbound
+        assert seen == {"sticker_1_wave.png": b"PNGDATA"}
+        assert call["text"].startswith("look\n[A sticker named 'dance'")
+        assert "lottie" in call["text"]
+        assert not list(rig.tmp.glob("in-*"))
+
+    @pytest.mark.asyncio
+    async def test_a_sticker_that_cannot_be_downloaded_becomes_a_note(
+        self, rig: SimpleNamespace, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        async def broken(url: str) -> bytes:
+            raise OSError("offline")
+
+        monkeypatch.setattr(rig.bridge, "_download", broken)
+        png = SimpleNamespace(
+            id=3, name="wave", url="http://x/3.png", format=SimpleNamespace(name="png")
+        )
+        message = Message(110, ALICE, "", Channel(900, None), None)
+        message.stickers = [png]
+        await rig.bridge.on_message(message)
+        assert "could not be downloaded" in rig.ctx.inbound[0]["text"]
+
+    @pytest.mark.asyncio
     async def test_an_oversized_attachment_is_not_downloaded(
         self, rig: SimpleNamespace, monkeypatch: pytest.MonkeyPatch
     ) -> None:

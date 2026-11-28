@@ -19,6 +19,7 @@ import contextlib
 from pathlib import Path
 from typing import Any
 
+import aiohttp
 import calls
 import convert
 import discord
@@ -139,6 +140,25 @@ class Bridge:
                     }
                 )
                 voice = voice or convert.audio_kind(mime, attachment.filename)
+            notes: list[str] = []
+            for sticker in getattr(message, "stickers", []):
+                kind = str(
+                    getattr(getattr(sticker, "format", None), "name", "")
+                ).lower()
+                saved = await self._sticker_file(sticker, kind)
+                if saved is None:
+                    notes.append(convert.sticker_note(sticker.name, kind))
+                    continue
+                files.append(saved)
+                attachments.append(
+                    {
+                        "path": str(saved),
+                        "filename": saved.name,
+                        "mime_type": "image/png",
+                    }
+                )
+            if notes:
+                content = "\n".join(part for part in (content, *notes) if part)
             author = message.author
             await self.ctx.interfaces.inbound(
                 convert.INTERFACE_ID,
@@ -169,6 +189,29 @@ class Bridge:
             for file in files:
                 with contextlib.suppress(OSError):
                     file.unlink()
+
+    async def _sticker_file(self, sticker: Any, kind: str) -> Path | None:
+        """A still (PNG) sticker as a file, or ``None``: other formats cannot be shown."""
+        if kind != "png":
+            return None
+        try:
+            data = await self._download(str(sticker.url))
+        except Exception as exc:  # noqa: BLE001 - a sticker is not worth losing the message
+            self.ctx.log.warning(f"sticker {sticker.id}: {type(exc).__name__}")
+            return None
+        if not data or len(data) > convert.MAX_STICKER_BYTES:
+            return None
+        target = self.ctx.inbox_path(convert.sticker_filename(sticker.id, sticker.name))
+        target.write_bytes(data)
+        return target
+
+    @staticmethod
+    async def _download(url: str) -> bytes:
+        timeout = aiohttp.ClientTimeout(total=15)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(url) as response:
+                response.raise_for_status()
+                return await response.read()
 
     async def _replied_message(self, message: discord.Message) -> Any:
         ref = message.reference
