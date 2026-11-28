@@ -48,6 +48,23 @@ _SILENCE_FRAME = b"\x00" * FRAME_BYTES
 _patched = False
 
 
+class _CryptoErrorFilter(logging.Filter):
+    """Drop voice_recv's "CryptoError decoding packet data" lines.
+
+    Discord periodically sends RTCP feedback packets that the library tries to decrypt and
+    cannot (a known upstream limitation); it drops them silently, so the ERROR it logs is
+    noise that would fill the Core's log."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "CryptoError" not in record.getMessage()
+
+
+def _quiet_rtcp_noise() -> None:
+    reader = logging.getLogger("discord.ext.voice_recv.reader")
+    if not any(isinstance(f, _CryptoErrorFilter) for f in reader.filters):
+        reader.addFilter(_CryptoErrorFilter())
+
+
 def apply_patches() -> bool:
     """Make voice_recv survive what real channels throw at it. Idempotent.
 
@@ -63,6 +80,7 @@ def apply_patches() -> bool:
     global _patched
     if _patched or not HAS_VOICE_RECV:
         return _patched
+    _quiet_rtcp_noise()
     from discord.ext.voice_recv.opus import PacketDecoder
     from discord.ext.voice_recv.router import PacketRouter
 

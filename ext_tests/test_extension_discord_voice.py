@@ -532,3 +532,14 @@ def test_the_resilience_patches_apply_once_when_voice_recv_is_there() -> None:
         pytest.skip("discord-ext-voice-recv is not installed here")
     assert voice.apply_patches() is True
     assert voice.apply_patches() is True  # idempotent
+
+
+def test_the_rtcp_crypto_noise_is_filtered_out_of_the_log() -> None:
+    import logging
+
+    record = logging.LogRecord(
+        "x", logging.ERROR, "f", 1, "CryptoError decoding packet data", None, None
+    )
+    other = logging.LogRecord("x", logging.ERROR, "f", 1, "something else", None, None)
+    noise = voice._CryptoErrorFilter()
+    assert noise.filter(record) is False and noise.filter(other) is True
