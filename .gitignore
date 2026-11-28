@@ -6,3 +6,4 @@ __pycache__/
 /extensions/synth_stage/web/
 /extensions/*/lib/
 .pytest_cache/
+logs/
